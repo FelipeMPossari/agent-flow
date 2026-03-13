@@ -5,6 +5,6 @@ import { Graph } from '@antv/x6';
     providedIn: 'root'
 })
 export class FlowService {
-    // Aqui guardaremos a instância viva do gráfico
-    public graph!: Graph;
+    // A MÁGICA: O 'static' ignora a injeção do Angular. Ele é absoluto na memória.
+    public static graph: Graph;
 }

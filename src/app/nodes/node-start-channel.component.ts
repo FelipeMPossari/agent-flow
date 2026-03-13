@@ -1,6 +1,8 @@
-import { Component, Input, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Node } from '@antv/x6';
+import { FlowService } from '../flow/flow.service';
 import { NodeWrapperComponent } from './node-wrapper.component';
 
 @Component({
@@ -8,45 +10,59 @@ import { NodeWrapperComponent } from './node-wrapper.component';
     standalone: true,
     imports: [CommonModule, FormsModule, NodeWrapperComponent],
     template: `
-    <app-node-wrapper [nodeId]="data?.id">
-      
-      <div class="node-header">
-        <span class="icon">💬</span>
-        <span class="title">Iniciar por um canal</span>
-      </div>
-
-      <div class="node-body">
-        <label>Selecione um ou mais canais</label>
+    <app-node-wrapper>
         
-        <div class="custom-select-container" (mousedown)="$event.stopPropagation()">
-            <div class="select-trigger" (click)="toggleDropdown()" [class.active]="isDropdownOpen">
-              <span>{{ getSelectedChannelName() || 'Selecione' }}</span>
-              <span class="arrow">▼</span>
-            </div>
+        <div class="custom-node">
+          <div class="node-header">
+            <span class="icon">💬</span>
+            <span class="title">Iniciar por um canal</span>
+          </div>
 
-            <div class="dropdown-menu" *ngIf="isDropdownOpen">
-                <div class="search-container">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" [(ngModel)]="searchQuery" (click)="$event.stopPropagation()" placeholder="Pesquisar..." autocomplete="off">
+          <div class="node-body">
+            <label>Selecione um ou mais canais</label>
+            
+            <div class="custom-select-container" (mousedown)="$event.stopPropagation()">
+                <div class="select-trigger" (click)="toggleDropdown()" [class.active]="isDropdownOpen">
+                  <span>{{ getSelectedChannelName() || 'Selecione' }}</span>
+                  <span class="arrow">▼</span>
                 </div>
-                <div class="options-list">
-                    <div class="option" *ngFor="let channel of filteredChannels" (click)="selectChannel(channel.id)" [class.selected]="selectedChannel === channel.id">
-                        {{ channel.name }}
+
+                <div class="dropdown-menu" *ngIf="isDropdownOpen">
+                    <div class="search-container">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" [(ngModel)]="searchQuery" (click)="$event.stopPropagation()" placeholder="Pesquisar..." autocomplete="off">
                     </div>
-                    <div class="no-results" *ngIf="filteredChannels.length === 0">Nenhum canal encontrado</div>
+                    <div class="options-list">
+                        <div class="option" *ngFor="let channel of filteredChannels" (click)="selectChannel(channel.id)" [class.selected]="selectedChannel === channel.id">
+                            {{ channel.name }}
+                        </div>
+                        <div class="no-results" *ngIf="filteredChannels.length === 0">Nenhum canal encontrado</div>
+                    </div>
                 </div>
             </div>
-        </div>
-      </div>
+          </div>
 
-      <div class="node-footer warning" *ngIf="!selectedChannel">
-        É necessário selecionar um canal
-      </div>
+          <div class="node-footer warning" *ngIf="!selectedChannel">
+            É necessário selecionar um canal
+          </div>
+        </div>
 
     </app-node-wrapper>
   `,
     styles: [`
+    :host { display: block; width: 100%; height: 100%; box-sizing: border-box; }
     * { box-sizing: border-box !important; }
+
+    .custom-node {
+      width: 100%; height: 100%;
+      background-color: #222529; 
+      border: 1px solid #33383d; 
+      border-radius: 20px; 
+      display: flex; flex-direction: column;
+      color: #e0e0e0; font-family: 'Segoe UI', sans-serif;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      position: relative; 
+    }
     
     .node-header { padding: 16px 20px 8px 20px; display: flex; align-items: center; gap: 8px; }
     .icon { font-size: 16px; color: #52c41a; }
@@ -94,8 +110,6 @@ import { NodeWrapperComponent } from './node-wrapper.component';
   `]
 })
 export class NodeStartChannelComponent implements OnInit {
-    @Input() data: any; // O X6 passa os dados do nó por aqui (incluindo o ID para o wrapper)
-
     selectedChannel: string = '';
     isDropdownOpen: boolean = false;
     searchQuery: string = '';
@@ -110,10 +124,20 @@ export class NodeStartChannelComponent implements OnInit {
 
     constructor(private eRef: ElementRef) { }
 
+    private getNode(): Node | null {
+        if (!FlowService.graph) return null;
+        const view = FlowService.graph.findViewByElem(this.eRef.nativeElement);
+        return view ? view.cell as Node : null;
+    }
+
     ngOnInit() {
-        if (this.data) {
-            this.selectedChannel = this.data.config?.channel || '';
-        }
+        setTimeout(() => {
+            const node = this.getNode();
+            if (node) {
+                const data = node.getData();
+                this.selectedChannel = data?.config?.channel || '';
+            }
+        });
     }
 
     toggleDropdown() {
@@ -141,7 +165,14 @@ export class NodeStartChannelComponent implements OnInit {
     selectChannel(channelId: string) {
         this.selectedChannel = channelId;
         this.isDropdownOpen = false;
-        // Agora precisamos emitir um evento ou usar o FlowService se quiser atualizar o X6
-        // Mas para manter a UI reativa, essa alteração local já é suficiente por agora.
+
+        const node = this.getNode();
+        if (node) {
+            const currentData = node.getData();
+            node.setData({
+                ...currentData,
+                config: { ...currentData.config, channel: channelId }
+            });
+        }
     }
 }

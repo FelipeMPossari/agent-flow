@@ -9,9 +9,10 @@ import { Graph, Cell, Node } from '@antv/x6'; // <-- Adicionamos o Node aqui
 import { register } from '@antv/x6-angular-shape';
 
 import * as Models from './flow.models';
-import { getGraphOptions, LABEL_STYLE, PORT_GROUPS, validateConnectionRule } from './flow-graph.config';
+import { getGraphOptions, validateConnectionRule } from './flow-graph.config';
 import { FlowUtils } from './flow.utils';
-import { NodeStartChannelComponent } from '../nodes/node-start-channel.component';
+import { FlowService } from './flow.service';
+import { getNodeConfig, REGISTERED_NODES } from './flow-nodes.config';
 
 @Component({
     selector: 'app-flow-editor',
@@ -50,18 +51,16 @@ export class FlowEditorComponent implements AfterViewInit {
     selectedCell: Cell | null = null;
     modalState: Models.ModalState = { visible: false, type: 'alert', title: '', message: '', confirmLabel: 'OK', pendingAction: null };
 
-    constructor(
-        private ngZone: NgZone,
-        private cdr: ChangeDetectorRef,
-        private injector: Injector
-    ) {
-        // Registramos os componentes dinâmicos no motor do X6
-        register({
-            shape: 'ng-start-channel',
-            width: 250,
-            height: 160,
-            content: NodeStartChannelComponent,
-            injector: this.injector
+    constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef, private injector: Injector) {
+        // Registra todos os nós definidos no config
+        REGISTERED_NODES.forEach(node => {
+            register({
+                shape: node.shape,
+                width: node.width,
+                height: node.height,
+                content: node.content,
+                injector: this.injector
+            });
         });
     }
 
@@ -79,7 +78,17 @@ export class FlowEditorComponent implements AfterViewInit {
     private initGraph() {
         const options = getGraphOptions(this.container.nativeElement);
         options.connecting.validateConnection = (args: any) => validateConnectionRule({ ...args, graph: this.graph });
+
+        (options as any).interacting = {
+            nodeMovable: true,
+            stopDelegateOnMousedown: false
+        };
+
         this.graph = new Graph(options);
+
+        // Agora salvamos na propriedade estática!
+        FlowService.graph = this.graph;
+
         this.registerEvents();
     }
 
@@ -130,34 +139,19 @@ export class FlowEditorComponent implements AfterViewInit {
         const tool = this.availableTools.find(t => t.id === toolId);
         if (!tool) return;
 
-        const x = position ? position.x : 150 + Math.random() * 100;
-        const y = position ? position.y : 150 + Math.random() * 100;
+        const nodeId = `node-${Date.now()}`;
+        const x = (position?.x || 150) - 125;
+        const y = (position?.y || 150) - 50;
 
-        const ports = tool.category === 'trigger'
-            ? { groups: PORT_GROUPS, items: [{ group: 'out', id: 'out' }] }
-            : { groups: PORT_GROUPS, items: [{ group: 'in', id: 'in' }, { group: 'out', id: 'out' }] };
+        // Pegamos a configuração pronta do nosso arquivo externo
+        const nodeOptions = getNodeConfig(toolId, nodeId, toolLabel || tool.label);
 
-        if (toolId === 'start_channel') {
-            this.graph.addNode({
-                shape: 'ng-start-channel',
-                x: x - 125, y: y - 80,
-                data: { type: tool.id, label: tool.label, config: {} },
-                ports: ports,
-            });
-        } else {
-            const strokeColor = tool.category === 'trigger' ? '#52c41a' : (tool.category === 'condition' ? '#faad14' : '#1890ff');
-
-            this.graph.addNode({
-                x: x - 100, y: y - 50, width: 200, height: 100,
-                data: { type: tool.id, label: tool.label, config: {} },
-                markup: [{ tagName: 'rect', selector: 'body' }, { tagName: 'text', selector: 'label' }],
-                attrs: {
-                    body: { fill: '#2b2f33', stroke: strokeColor, strokeWidth: 2, rx: 8, ry: 8 },
-                    label: { text: toolLabel || tool.label, ...LABEL_STYLE }
-                },
-                ports: ports,
-            });
-        }
+        // Adicionamos ao gráfico com a posição tratada aqui
+        this.graph.addNode({
+            ...nodeOptions,
+            x,
+            y
+        });
     }
 
     onDragStart(event: DragEvent, type: string, label: string = '') {
