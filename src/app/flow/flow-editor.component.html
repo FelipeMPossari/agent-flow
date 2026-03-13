@@ -1,0 +1,55 @@
+<div class="app-container dark-theme">
+
+    <header class="top-header">
+        <div class="breadcrumbs">Configurações / Chatbots / Fluxo</div>
+        <div class="header-actions">
+            <span class="icon-btn">🔍</span>
+        </div>
+    </header>
+
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <button class="btn-add" [class.active]="showToolMenu" (click)="toggleToolMenu()">+</button>
+            <button class="btn-icon">💡</button>
+            <button class="btn-icon">↩️</button>
+            <button class="btn-icon">↪️</button>
+            <button class="btn-icon">💾</button>
+            <span class="status-warning">⚠️ Alterações não salvas</span>
+        </div>
+        <div class="toolbar-right">
+            <span class="flow-name">Fluxo ✏️</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="tool-panel" *ngIf="showToolMenu">
+            <div class="panel-header">
+                <span class="drag-hint">👋 Clique ou arraste</span>
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" placeholder="Pesquisar passo">
+                    <button class="close-btn" (click)="toggleToolMenu()">×</button>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="tool-section" *ngFor="let category of ['trigger', 'condition', 'action']">
+                    <h4>▶ {{ category === 'trigger' ? 'INÍCIO' : (category === 'condition' ? 'CONDIÇÃO' : 'AÇÃO') }}
+                    </h4>
+                    <div class="tool-grid">
+                        <div class="tool-card" *ngFor="let tool of getToolsByCategory(category)" draggable="true"
+                            (dragstart)="onDragStart($event, tool.id, tool.label)">
+                            <div class="card-title"
+                                [style.color]="category === 'trigger' ? '#52c41a' : (category === 'condition' ? '#faad14' : '#1890ff')">
+                                <span class="card-icon">{{ tool.icon }}</span> {{ tool.label }}
+                            </div>
+                            <div class="card-desc">{{ tool.description }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div #container class="graph-container" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+        </div>
+    </div>
+</div>

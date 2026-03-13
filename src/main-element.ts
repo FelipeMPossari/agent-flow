@@ -1,7 +1,7 @@
 import { createApplication } from '@angular/platform-browser';
 import { createCustomElement } from '@angular/elements';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { FlowEditorComponent } from './app/flow-editor.component';
+import { FlowEditorComponent } from './app/flow/flow-editor.component';
 
 // Configuração básica da aplicação (providers, rotas se tivesse, etc)
 const appConfig: ApplicationConfig = {

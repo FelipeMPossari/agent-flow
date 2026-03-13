@@ -1,0 +1,276 @@
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Fundo base */
+.app-container.dark-theme {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #1a1b1e;
+    color: #e0e0e0;
+}
+
+/* --- HEADERS E TOOLBARS --- */
+.top-header {
+    height: 50px;
+    background-color: #141517;
+    border-bottom: 1px solid #2b2f33;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.breadcrumbs {
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.5px;
+}
+
+.header-actions {
+    cursor: pointer;
+    color: #888;
+}
+
+.toolbar {
+    height: 56px;
+    background-color: #1a1b1e;
+    border-bottom: 1px solid #2b2f33;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 10;
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* O Botão de + */
+.btn-add {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #3b5998;
+    /* Um azul mais calmo */
+    color: white;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-add:hover {
+    background-color: #4c70ba;
+}
+
+.btn-add.active {
+    background-color: #1890ff;
+    transform: rotate(45deg);
+    /* Vira um 'x' opcionalmente */
+}
+
+/* Botões menores da barra */
+.btn-icon {
+    background: transparent;
+    border: 1px solid #2b2f33;
+    color: #888;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    border-color: #555;
+    color: #fff;
+}
+
+.status-warning {
+    color: #faad14;
+    font-size: 13px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.flow-name {
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* --- ÁREA PRINCIPAL --- */
+.main-content {
+    flex: 1;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+}
+
+.graph-container {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+/* --- MENU FLUTUANTE DE FERRAMENTAS --- */
+.tool-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 380px;
+    max-height: calc(100vh - 150px);
+    background-color: #222529;
+    border: 1px solid #33383d;
+    border-radius: 12px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    animation: slideIn 0.2s ease-out;
+}
+
+.panel-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #33383d;
+}
+
+.drag-hint {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #141517;
+    border: 1px solid #33383d;
+    border-radius: 20px;
+    padding: 4px 12px;
+    gap: 8px;
+}
+
+.search-box input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    width: 120px;
+    font-size: 13px;
+    outline: none;
+}
+
+.search-box .close-btn {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.search-box .close-btn:hover {
+    color: #fff;
+}
+
+.panel-body {
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Barra de rolagem customizada pro painel escuro */
+.panel-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.panel-body::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 10px;
+}
+
+.tool-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #888;
+    letter-spacing: 1px;
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.tool-card {
+    background-color: #2a2e33;
+    border: 1px solid #3a3f45;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: grab;
+    transition: all 0.2s;
+}
+
+.tool-card:hover {
+    background-color: #32373d;
+    border-color: #555;
+    transform: translateY(-2px);
+}
+
+.tool-card:active {
+    cursor: grabbing;
+}
+
+.card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #52c41a;
+    /* Cor base, sobrescrita no HTML por categoria */
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-desc {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
