@@ -1,0 +1,86 @@
+<div class="app-container">
+
+    <div class="sidebar">
+        <h3 style="margin: 5px 0; font-size: 13px; text-transform: uppercase;">Lógica</h3>
+
+        <button (click)="addNode('if')" draggable="true" (dragstart)="onDragStart($event, 'if', 'Condição')"
+            style="border-left: 4px solid #faad14; background: #fffbe6; cursor: grab;">
+            ⚖️ Condição
+        </button>
+
+        <button (click)="addNode('and')" draggable="true" (dragstart)="onDragStart($event, 'and', 'E')"
+            style="border-left: 4px solid #198754; background: #d1e7dd; cursor: grab; margin-top: 5px;">
+            ➕ E
+        </button>
+
+        <button (click)="addNode('or')" draggable="true" (dragstart)="onDragStart($event, 'or', 'OU')"
+            style="border-left: 4px solid #084298; background: #cfe2ff; cursor: grab; margin-top: 5px;">
+            🔀 OU
+        </button>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0 10px 0;">
+
+        <div class="section-header" (click)="toggleActions()">
+            <h3>Ações</h3>
+            <button class="toggle-btn">{{ showActions ? '▼' : '▶' }}</button>
+        </div>
+
+        <div class="actions-container" *ngIf="showActions">
+            <button *ngFor="let tool of tools" (click)="addNode(tool.id, tool.label)" draggable="true"
+                (dragstart)="onDragStart($event, tool.id, tool.label)" style="cursor: grab;">
+                <span *ngIf="tool.icon" style="margin-right: 5px;">{{ tool.icon }}</span>
+                {{ tool.label }}
+            </button>
+        </div>
+
+        <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+            <button (click)="triggerFileInput()"
+                style="width: 100%; border-color: #1890ff; color: #1890ff; background: #e6f7ff;">
+                📂 Importar Fluxo
+            </button>
+
+            <input type="file" id="fileInput" style="display: none;" accept=".json" (change)="onFileSelected($event)">
+
+            <button (click)="confirmClearCanvas()"
+                style="width: 100%; margin-top: 5px; border-color: #ff4d4f; color: #ff4d4f;">
+                🗑️ Limpar Fluxo
+            </button>
+        </div>
+
+        <div class="instruction"
+            style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; padding-bottom: 0px; text-align: left; padding-left: 10px;">
+            <small>🖱️ <b>Arrastar:</b> Cria conexões</small><br>
+            <small>🗑️ <b>Delete:</b> Apaga o item selecionado</small><br>
+            <small>✏️ <b>Duplo Clique:</b> Edita a regra</small><br>
+            <hr style="border: 0; border-top: 1px dashed #ddd; margin: 8px 0;">
+            <small>🟢 <b>Saída Verde:</b> Caminho Verdadeiro</small><br>
+            <small>🔴 <b>Saída Vermelha:</b> Caminho Falso (Nega a regra)</small>
+        </div>
+    </div>
+
+    <div #container class="graph-container" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+    </div>
+
+    <div class="modal-overlay" *ngIf="modalState.visible">
+        <div class="modal-box">
+            <div class="modal-header" [class.warning]="modalState.type === 'confirm' || modalState.type === 'warning'">
+                <span class="modal-icon">
+                    {{ (modalState.type === 'confirm' || modalState.type === 'warning') ? '⚠️' : 'ℹ️' }}
+                </span>
+                <h3>{{ modalState.title }}</h3>
+            </div>
+            <div class="modal-body">
+                <p>{{ modalState.message }}</p>
+            </div>
+            <div class="modal-footer">
+                <button *ngIf="modalState.type === 'confirm'" class="modal-btn cancel" (click)="closeModal()">
+                    Cancelar
+                </button>
+                <button class="modal-btn confirm" [class.danger]="modalState.type === 'confirm'"
+                    (click)="confirmModalAction()">
+                    {{ modalState.confirmLabel || 'OK' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

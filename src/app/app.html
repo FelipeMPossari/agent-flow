@@ -1,0 +1,78 @@
+<div class="app-container">
+    <div class="sidebar">
+        <h3>Ferramentas</h3>
+
+        <button (click)="addNode('typeform')">📝 Typeform</button>
+        <button (click)="addNode('slack')">💬 Slack</button>
+        <button (click)="addNode('sheets')">📊 Sheets</button>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+        <h4 style="margin: 5px 0; color: #666; font-size: 12px; text-transform: uppercase;">Lógica</h4>
+
+        <button (click)="addNode('if')" style="border-left: 4px solid #faad14; background: #fffbe6;">
+            🔀 IF Condition
+        </button>
+        <button (click)="addNode('else-if')" style="border-left: 4px solid #faad14; background: #fffbe6;">
+            🔀 Else If
+        </button>
+        <button (click)="addNode('else')" style="border-left: 4px solid #faad14; background: #fffbe6;">
+            ↪️ Else
+        </button>
+
+        <hr>
+        <div class="instruction">
+            <small>🖱️ <b>Arrastar:</b> Move os nós</small><br>
+            <small>🔗 <b>Conectar:</b> Puxe das bolinhas</small><br>
+            <small>🗑️ <b>Delete:</b> Tecla Delete</small><br>
+            <small>✏️ <b>Editar:</b> Clique Duplo no IF</small>
+        </div>
+    </div>
+
+    <div #container class="graph-container"></div>
+
+    <div class="modal-overlay" *ngIf="showModal">
+        <div class="modal-content">
+            <h3>Configurar Condição</h3>
+
+            <div class="form-group">
+                <label>Propriedade:</label>
+                <select [(ngModel)]="selectedProperty" (change)="onPropertyChange()">
+                    <option [ngValue]="null" disabled>Selecione...</option>
+                    <option *ngFor="let prop of availableProperties" [ngValue]="prop">
+                        {{ prop.label }} ({{ prop.type }})
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group" *ngIf="selectedProperty">
+                <label>Comparação:</label>
+                <select [(ngModel)]="selectedOperator">
+                    <option value="" disabled>Selecione...</option>
+                    <option *ngFor="let op of availableOperators" [value]="op.id">
+                        {{ op.label }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group" *ngIf="selectedOperator && selectedProperty?.type !== 'boolean'">
+                <label>Valor:</label>
+
+                <input *ngIf="selectedProperty?.type === 'number'" type="number" [(ngModel)]="conditionValue"
+                    placeholder="Digite o número...">
+
+                <input *ngIf="selectedProperty?.type === 'string'" type="text" [(ngModel)]="conditionValue"
+                    placeholder="Digite o texto...">
+
+                <input *ngIf="selectedProperty?.type === 'date'" type="date" [(ngModel)]="conditionValue">
+            </div>
+
+            <div class="modal-actions">
+                <button (click)="closeModal()">Cancelar</button>
+                <button class="save-btn" (click)="saveCondition()"
+                    [disabled]="!selectedProperty || !selectedOperator || (selectedProperty.type !== 'boolean' && conditionValue === '')">
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
