@@ -31,21 +31,28 @@ export class FlowEditorComponent implements AfterViewInit {
     public availableTools: Models.AgentTool[] = [
         // Gatilhos (Início)
         { id: 'start_channel', category: 'trigger', label: 'Iniciar por um canal', description: 'Inicia quando o contato entra.', icon: '💬' },
-        { id: 'start_manual', category: 'trigger', label: 'Iniciar manualmente', description: 'Ativado pelo atendente.', icon: '👆' },
 
         // Condições
-        { id: 'cond_time', category: 'condition', label: 'Horários', description: 'Ações por intervalos de tempo.', icon: '🕒' },
         { id: 'cond_custom', category: 'condition', label: 'Definir condição', description: 'Regras personalizadas.', icon: '🔀' },
 
-        // Ações
-        { id: 'action_transfer', category: 'action', label: 'Transferir p/ atendente', description: 'Passa para um humano.', icon: '🎧' },
-        { id: 'action_message', category: 'action', label: 'Enviar Mensagem', description: 'Envia texto ao cliente.', icon: '✉️' }
     ];
 
     // Controle do Menu Flutuante
     public showToolMenu: boolean = true;
     public toggleToolMenu() { this.showToolMenu = !this.showToolMenu; }
-    public getToolsByCategory(category: string) { return this.availableTools.filter(t => t.category === category); }
+    // No topo da classe
+    searchTerm: string = '';
+
+    // Ajuste o método de filtro para considerar a busca
+    getToolsByCategory(category: string) {
+        return this.availableTools.filter(tool => {
+            const matchesCategory = tool.category === category;
+            const matchesSearch = tool.label.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                tool.description?.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+            return matchesCategory && matchesSearch;
+        });
+    }
 
     private graph!: Graph;
     selectedCell: Cell | null = null;

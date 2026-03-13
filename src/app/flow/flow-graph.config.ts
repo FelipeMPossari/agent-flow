@@ -48,14 +48,15 @@ export const validateConnectionRule = ({ sourceMagnet, targetMagnet, sourceView,
 
 export const getGraphOptions = (container: HTMLElement) => ({
     container: container,
-    grid: { size: 20, visible: true, type: 'mesh', args: { color: '#333' } }, // Malha escura
-    background: { color: '#1e1e1e' }, // Fundo Dark Mode
+    grid: { size: 20, visible: true, type: 'mesh', args: { color: '#333' } },
+    background: { color: '#1e1e1e' },
     panning: true,
     mousewheel: { enabled: true, modifiers: ['ctrl', 'meta'] as ('ctrl' | 'meta')[] },
     interacting: true,
     connecting: {
-        router: 'manhattan',
-        connector: { name: 'rounded', args: { radius: 8 } },
+        router: { name: 'normal' },
+        connector: { name: 'smooth' },
+
         anchor: 'center',
         connectionPoint: 'boundary',
         snap: true,
@@ -63,7 +64,18 @@ export const getGraphOptions = (container: HTMLElement) => ({
         highlight: true,
         createEdge() {
             return new Shape.Edge({
-                attrs: { line: { stroke: '#5F95FF', strokeWidth: 2, targetMarker: { name: 'block', width: 12, height: 8 } } },
+                attrs: {
+                    line: {
+                        stroke: '#5F95FF',
+                        strokeWidth: 2,
+                        // Suavizei um pouco a seta para combinar com a curva
+                        targetMarker: {
+                            name: 'block',
+                            width: 10,
+                            height: 7
+                        }
+                    }
+                },
                 zIndex: 0
             });
         },

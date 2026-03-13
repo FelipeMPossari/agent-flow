@@ -10,11 +10,6 @@
     <div class="toolbar">
         <div class="toolbar-left">
             <button class="btn-add" [class.active]="showToolMenu" (click)="toggleToolMenu()">+</button>
-            <button class="btn-icon">💡</button>
-            <button class="btn-icon">↩️</button>
-            <button class="btn-icon">↪️</button>
-            <button class="btn-icon">💾</button>
-            <span class="status-warning">⚠️ Alterações não salvas</span>
         </div>
         <div class="toolbar-right">
             <span class="flow-name">Fluxo ✏️</span>
@@ -27,7 +22,7 @@
                 <span class="drag-hint">👋 Clique ou arraste</span>
                 <div class="search-box">
                     <span>🔍</span>
-                    <input type="text" placeholder="Pesquisar passo">
+                    <input type="text" placeholder="Pesquisar passo" [(ngModel)]="searchTerm">
                     <button class="close-btn" (click)="toggleToolMenu()">×</button>
                 </div>
             </div>
