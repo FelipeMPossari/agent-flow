@@ -1,4 +1,5 @@
 import { NodeConditionComponent } from '../nodes/node-condition.component';
+import { NodeMessageComponent } from '../nodes/node-message.component';
 import { NodeStartChannelComponent } from '../nodes/node-start-channel.component';
 import { PORT_GROUPS } from './flow-graph.config';
 
@@ -14,7 +15,13 @@ export const REGISTERED_NODES = [
         width: 250,
         height: 250,
         content: NodeConditionComponent,
-    }
+    },
+    {
+        shape: 'ng-message',
+        width: 280,
+        height: 200,
+        content: NodeMessageComponent,
+    },
 ];
 
 export const getNodeConfig = (toolId: string, nodeId: string, toolLabel: string) => {
@@ -61,6 +68,21 @@ export const getNodeConfig = (toolId: string, nodeId: string, toolLabel: string)
                             id: 'out-false',
                             args: { x: 280, y: 125 }
                         }
+                    ]
+                }
+            };
+
+        case 'send_message': // Certifique-se que o ID bate com o availableTools
+            return {
+                ...baseConfig,
+                shape: 'ng-message',
+                width: 280,
+                height: 280,
+                ports: {
+                    ...baseConfig.ports,
+                    items: [
+                        { group: 'in', id: 'in' },
+                        { group: 'out', id: 'out' }
                     ]
                 }
             };
