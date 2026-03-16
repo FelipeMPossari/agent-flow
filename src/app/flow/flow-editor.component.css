@@ -6,7 +6,9 @@
     overflow: hidden;
 }
 
-/* Fundo base */
+/* ==========================================
+   1. FUNDO BASE E ESTRUTURA GERAL
+========================================== */
 .app-container.dark-theme {
     display: flex;
     flex-direction: column;
@@ -17,7 +19,23 @@
     color: #e0e0e0;
 }
 
-/* --- HEADERS E TOOLBARS --- */
+.main-content {
+    flex: 1;
+    position: relative;
+    display: flex;
+    overflow: hidden;
+}
+
+.graph-container {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+/* ==========================================
+   2. HEADER E TOOLBAR
+========================================== */
 .top-header {
     height: 50px;
     background-color: #141517;
@@ -57,13 +75,11 @@
     gap: 15px;
 }
 
-/* O Botão de + */
 .btn-add {
     width: 32px;
     height: 32px;
     border-radius: 50%;
     background-color: #3b5998;
-    /* Um azul mais calmo */
     color: white;
     border: none;
     font-size: 20px;
@@ -82,10 +98,8 @@
 .btn-add.active {
     background-color: #1890ff;
     transform: rotate(45deg);
-    /* Vira um 'x' opcionalmente */
 }
 
-/* Botões menores da barra */
 .btn-icon {
     background: transparent;
     border: 1px solid #2b2f33;
@@ -105,35 +119,15 @@
     color: #fff;
 }
 
-.status-warning {
-    color: #faad14;
-    font-size: 13px;
-    font-weight: 500;
-    margin-left: 10px;
-}
-
 .flow-name {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
 }
 
-/* --- ÁREA PRINCIPAL --- */
-.main-content {
-    flex: 1;
-    position: relative;
-    display: flex;
-    overflow: hidden;
-}
-
-.graph-container {
-    flex: 1;
-    width: 100%;
-    height: 100%;
-    outline: none;
-}
-
-/* --- MENU FLUTUANTE DE FERRAMENTAS --- */
+/* ==========================================
+   3. MENU LATERAL DE FERRAMENTAS (ESQUERDA)
+========================================== */
 .tool-panel {
     position: absolute;
     top: 20px;
@@ -204,7 +198,6 @@
     gap: 20px;
 }
 
-/* Barra de rolagem customizada pro painel escuro */
 .panel-body::-webkit-scrollbar {
     width: 6px;
 }
@@ -214,6 +207,7 @@
     border-radius: 10px;
 }
 
+/* Grid dos Cards de Nós */
 .tool-section h4 {
     margin: 0 0 10px 0;
     font-size: 12px;
@@ -250,7 +244,6 @@
     font-size: 13px;
     font-weight: 600;
     color: #52c41a;
-    /* Cor base, sobrescrita no HTML por categoria */
     margin-bottom: 6px;
     display: flex;
     align-items: center;
@@ -263,6 +256,344 @@
     line-height: 1.4;
 }
 
+
+/* ==========================================
+   4. MODAIS E OVERLAYS (ESTRUTURA COMPARTILHADA)
+========================================== */
+.fixed-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+}
+
+.fixed-overlay.dark {
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+}
+
+.fixed-overlay.transparent {
+    background: transparent;
+}
+
+.modal-header {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #2a2e33;
+}
+
+.modal-header h2 {
+    margin: 0 0 0 16px;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #8a919e;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    transition: 0.2s;
+}
+
+.close-btn:hover {
+    color: #fff;
+}
+
+.close-btn.left {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #2a2e33;
+    display: flex;
+    justify-content: stretch;
+}
+
+/* Estilos do Botão Primário */
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 24px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-primary.disabled,
+.btn-primary:disabled {
+    background: #33383d;
+    color: #8a919e;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-primary:not(.disabled):not(:disabled) {
+    background: #1890ff;
+    color: #fff;
+    cursor: pointer;
+}
+
+.btn-primary:not(.disabled):not(:disabled):hover {
+    background: #40a9ff;
+}
+
+
+/* ==========================================
+   5. MODAL DE VARIÁVEIS (POPOVER)
+========================================== */
+.floating-popover {
+    position: absolute;
+    width: 320px;
+    background-color: #1e2126;
+    border: 1px solid #33383d;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.popover-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #8a919e;
+}
+
+.floating-popover .search-box {
+    margin: 0 16px 12px;
+    position: relative;
+    border: none;
+    padding: 0;
+    background: transparent;
+}
+
+.floating-popover .search-box input {
+    width: 100%;
+    background: #141517;
+    border: 1px solid #1890ff;
+    border-radius: 20px;
+    padding: 8px 12px 8px 32px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+}
+
+.floating-popover .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #8a919e;
+}
+
+.variables-list {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 0 8px 8px;
+}
+
+.variables-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.variables-list::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 4px;
+}
+
+.var-item {
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ff9c6e;
+    font-family: monospace;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 8px;
+    border-bottom: 1px solid #2a2e33;
+    transition: 0.2s;
+}
+
+.var-item:hover {
+    background-color: #2a2e33;
+}
+
+.copy-icon {
+    color: #8a919e;
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   6. MODAL DE ANEXO (SIDEBAR DIREITA)
+========================================== */
+.attachment-sidebar {
+    width: 450px;
+    height: 100%;
+    background-color: #1e2126;
+    border-left: 1px solid #33383d;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tabs {
+    display: flex;
+    padding: 0 20px;
+    border-bottom: 1px solid #2a2e33;
+}
+
+.tab {
+    padding: 16px 0;
+    margin-right: 24px;
+    color: #8a919e;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
+}
+
+.tab.active {
+    color: #1890ff;
+    border-bottom-color: #1890ff;
+    font-weight: 500;
+}
+
+.upload-icon {
+    margin-right: 6px;
+    font-weight: bold;
+}
+
+.sidebar-body {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Zona de Drag & Drop */
+.upload-dropzone {
+    border: 1px dashed #4a4d52;
+    border-radius: 12px;
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: #141517;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.upload-dropzone:hover {
+    border-color: #1890ff;
+}
+
+.upload-dropzone.drag-over {
+    border-color: #1890ff;
+    background-color: rgba(24, 144, 255, 0.1);
+}
+
+.upload-icon-large {
+    font-size: 24px;
+    color: #1890ff;
+    margin-bottom: 16px;
+    font-weight: bold;
+}
+
+.upload-dropzone p {
+    color: #e0e0e0;
+    font-size: 14px;
+    margin: 0 0 8px;
+    line-height: 1.5;
+}
+
+.upload-dropzone .limit {
+    color: #8a919e;
+    font-size: 12px;
+}
+
+/* Card do Arquivo Anexado */
+.file-preview-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #141517;
+    border: 1px solid #33383d;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 16px;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.file-icon {
+    font-size: 24px;
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.file-name {
+    color: #e0e0e0;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+}
+
+.file-size {
+    color: #8a919e;
+    font-size: 12px;
+}
+
+.remove-file-btn {
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    transition: 0.2s;
+}
+
+.remove-file-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+/* ==========================================
+   7. ANIMAÇÕES GERAIS
+========================================== */
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -272,5 +603,27 @@
     to {
         opacity: 1;
         transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

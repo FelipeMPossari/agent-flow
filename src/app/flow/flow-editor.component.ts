@@ -1,65 +1,71 @@
-import {
-    Component, AfterViewInit, ViewChild, ElementRef,
-    HostListener, NgZone, ChangeDetectorRef, Input, Output, EventEmitter, SimpleChanges,
-    Injector
-} from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, NgZone, ChangeDetectorRef, Input, Output, EventEmitter, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Graph, Cell, Node } from '@antv/x6'; // <-- Adicionamos o Node aqui
+import { Graph, Cell, Node } from '@antv/x6';
 import { register } from '@antv/x6-angular-shape';
 
 import * as Models from './flow.models';
 import { getGraphOptions, validateConnectionRule } from './flow-graph.config';
-import { FlowUtils } from './flow.utils';
 import { FlowService } from './flow.service';
 import { getNodeConfig, REGISTERED_NODES } from './flow-nodes.config';
+import { AVAILABLE_TOOLS, CATEGORY_CONFIG } from './flow-catalog.config';
+import { setupGraphEvents } from './flow-events.manager';
 
 @Component({
     selector: 'app-flow-editor',
     standalone: true,
-    imports: [CommonModule, FormsModule], // O Angular reclamou desse cara aqui
+    imports: [CommonModule, FormsModule],
     templateUrl: './flow-editor.component.html',
     styleUrls: ['./flow-editor.component.css']
 })
 export class FlowEditorComponent implements AfterViewInit {
+    // --- ELEMENTOS E COMUNICAÇÃO ---
     @ViewChild('container', { static: true }) container!: ElementRef;
-
     @Input() control: any;
     @Output() saveGraph = new EventEmitter<Models.WorkflowDefinition>();
 
-    // --- CATÁLOGO DE NÓS (Hardcoded) ---
-    public availableTools: Models.AgentTool[] = [
-        // Gatilhos (Início)
-        { id: 'start_channel', category: 'trigger', label: 'Iniciar por um canal', description: 'Inicia quando o contato entra.', icon: '💬' },
+    // --- ESTADOS GERAIS DA UI ---
+    public availableTools = AVAILABLE_TOOLS;
+    public searchTerm: string = '';
+    public showToolMenu: boolean = true;
+    public selectedCell: Cell | null = null;
 
-        // Condições
-        { id: 'cond_custom', category: 'condition', label: 'Definir condição', description: 'Regras personalizadas.', icon: '🔀' },
+    // --- ESTADOS DAS MODAIS DE MENSAGEM ---
+    activeMessageNode: Node | null = null;
+    showAttachmentModal = false;
+    showVariablesModal = false;
+    variablesModalPos = { x: 0, y: 0 };
+    searchVar = '';
+    selectedFile: File | null = null;
+    isDraggingFile = false;
 
+    // --- DADOS MOCKADOS ---
+    variablesList = [
+        { label: '{{Contexto.DataAtualUTC}}', value: '{{Contexto.DataAtualUTC}}' },
+        { label: '{{Conversa.Id}}', value: '{{Conversa.Id}}' },
+        { label: '{{Conversa.DataDeCriacaoUTC}}', value: '{{Conversa.DataDeCriacaoUTC}}' },
+        { label: '{{Atendente.PrimeiroNome}}', value: '{{Atendente.PrimeiroNome}}' },
+        { label: '{{Contato.Id}}', value: '{{Contato.Id}}' }
     ];
 
-    // Controle do Menu Flutuante
-    public showToolMenu: boolean = true;
-    public toggleToolMenu() { this.showToolMenu = !this.showToolMenu; }
-    // No topo da classe
-    searchTerm: string = '';
+    private graph!: Graph;
 
-    // Ajuste o método de filtro para considerar a busca
-    getToolsByCategory(category: string) {
-        return this.availableTools.filter(tool => {
-            const matchesCategory = tool.category === category;
-            const matchesSearch = tool.label.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                tool.description?.toLowerCase().includes(this.searchTerm.toLowerCase());
-
-            return matchesCategory && matchesSearch;
-        });
+    // ==========================================
+    // CICLOS DE VIDA E INICIALIZAÇÃO
+    // ==========================================
+    constructor(
+        private ngZone: NgZone,
+        private cdr: ChangeDetectorRef,
+        private injector: Injector
+    ) {
+        this.registerAngularNodes();
     }
 
-    private graph!: Graph;
-    selectedCell: Cell | null = null;
-    modalState: Models.ModalState = { visible: false, type: 'alert', title: '', message: '', confirmLabel: 'OK', pendingAction: null };
+    ngAfterViewInit() {
+        this.initGraph();
+    }
 
-    constructor(private ngZone: NgZone, private cdr: ChangeDetectorRef, private injector: Injector) {
-        // Registra todos os nós definidos no config
+    private registerAngularNodes() {
         REGISTERED_NODES.forEach(node => {
             register({
                 shape: node.shape,
@@ -71,75 +77,61 @@ export class FlowEditorComponent implements AfterViewInit {
         });
     }
 
-    ngAfterViewInit() { this.initGraph(); }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes['control'] && this.control) {
-            this.control.getExportData = this.getExportData.bind(this);
-            this.control.importData = this.importData.bind(this);
-            this.control.clearCanvas = this.clearCanvas.bind(this);
-            this.control.updateNodeData = this.apiUpdateNodeData.bind(this);
-        }
-    }
-
     private initGraph() {
         const options = getGraphOptions(this.container.nativeElement);
         options.connecting.validateConnection = (args: any) => validateConnectionRule({ ...args, graph: this.graph });
 
-        (options as any).interacting = {
-            nodeMovable: true,
-            stopDelegateOnMousedown: false
-        };
-
         this.graph = new Graph(options);
-
-        // Agora salvamos na propriedade estática!
         FlowService.graph = this.graph;
 
-        this.registerEvents();
+        setupGraphEvents(this.graph, this.ngZone, this);
+        this.setupExternalControls();
     }
 
-    private registerEvents() {
-        this.graph.on('node:click', ({ node }) => this.ngZone.run(() => this.selectCell(node)));
-        this.graph.on('edge:click', ({ edge }) => this.ngZone.run(() => this.selectCell(edge)));
-        this.graph.on('blank:click', () => this.ngZone.run(() => this.resetSelection()));
-
-        // Removemos o dblclick antigo, agora cuidaremos disso de outra forma
-        // this.graph.on('node:dblclick', ...);
-
-        // Botão flutuante genérico para apagar a LINHA
-        this.graph.on('edge:mouseenter', ({ edge }) => edge.addTools([{ name: 'button-remove', args: { distance: '50%', offset: 0, onClick: () => edge.remove() } }]));
-        this.graph.on('edge:mouseleave', ({ edge }) => edge.removeTools());
-        this.graph.on('node:custom:delete', ({ node }: { node: Node }) => {
-            this.ngZone.run(() => {
-                this.graph.removeNode(node);
-            });
-        });
-
-        // OUVIR O EVENTO DE COPIAR
-        this.graph.on('node:custom:copy', ({ node }: { node: Node }) => {
-            this.ngZone.run(() => {
-                const pos = node.getPosition();
-                const clone = node.clone();
-                clone.position(pos.x + 40, pos.y + 40);
-                this.graph.addNode(clone);
-            });
-        });
+    // ==========================================
+    // MENU E FERRAMENTAS LATERAIS
+    // ==========================================
+    getCategoryInfo(cat: string) {
+        return CATEGORY_CONFIG[cat] || { label: cat.toUpperCase(), color: '#fff' };
     }
 
-    // --- FUNÇÕES DE AÇÃO DO GRAPH (Invocadas pelo Wrapper) ---
-    public deleteNode(node: Node) { // Trocamos Cell por Node
-        this.graph.removeCell(node);
+    toggleToolMenu() {
+        this.showToolMenu = !this.showToolMenu;
     }
 
-    public copyNode(node: Node) { // Trocamos Cell por Node
-        this.ngZone.run(() => {
-            const nodeData = node.getData();
-            const originalPos = node.getPosition(); // Agora o TypeScript reconhece a posição perfeitamente!
+    getToolsByCategory(category: string) {
+        return this.availableTools.filter(t =>
+            t.category === category &&
+            (t.label.toLowerCase().includes(this.searchTerm.toLowerCase()) || !this.searchTerm)
+        );
+    }
 
-            // Adiciona o novo nó com um pequeno offset para não sobrepor perfeitamente o antigo
-            this.addNode(nodeData.type, nodeData.label, { x: originalPos.x + 30, y: originalPos.y + 30 });
-        });
+    // ==========================================
+    // INTERAÇÕES NO GRAFO (SELEÇÃO E NÓS)
+    // ==========================================
+    selectCell(cell: Cell) {
+        this.resetSelection();
+        this.selectedCell = cell;
+
+        if (cell.isNode()) {
+            cell.attr('body', { stroke: '#ff9c6e', strokeWidth: 3 });
+        } else if (cell.isEdge()) {
+            cell.attr('line', { stroke: '#ff9c6e', strokeWidth: 3 });
+        }
+    }
+
+    resetSelection() {
+        if (this.selectedCell) {
+            if (this.selectedCell.isNode()) {
+                const data = this.selectedCell.getData();
+                const tool = this.availableTools.find(t => t.id === data.type);
+                const color = tool ? this.getCategoryInfo(tool.category).color : '#5F95FF';
+                this.selectedCell.attr('body', { stroke: color, strokeWidth: 2 });
+            } else if (this.selectedCell.isEdge()) {
+                this.selectedCell.attr('line', { stroke: '#5F95FF', strokeWidth: 2 });
+            }
+        }
+        this.selectedCell = null;
     }
 
     addNode(toolId: string, toolLabel?: string, position?: { x: number, y: number }) {
@@ -147,56 +139,156 @@ export class FlowEditorComponent implements AfterViewInit {
         if (!tool) return;
 
         const nodeId = `node-${Date.now()}`;
-        const x = (position?.x || 150) - 125;
-        const y = (position?.y || 150) - 50;
-
-        // Pegamos a configuração pronta do nosso arquivo externo
         const nodeOptions = getNodeConfig(toolId, nodeId, toolLabel || tool.label);
 
-        // Adicionamos ao gráfico com a posição tratada aqui
         this.graph.addNode({
             ...nodeOptions,
-            x,
-            y
+            x: (position?.x || 150) - 125,
+            y: (position?.y || 150) - 50
         });
     }
 
-    onDragStart(event: DragEvent, type: string, label: string = '') {
-        event.dataTransfer?.setData('application/json', JSON.stringify({ type, label }));
-    }
-    onDragOver(event: DragEvent) { event.preventDefault(); }
-    onDrop(event: DragEvent) {
-        event.preventDefault();
-        const dataString = event.dataTransfer?.getData('application/json');
-        if (!dataString) return;
-        try {
-            const { type, label } = JSON.parse(dataString);
-            const { x, y } = this.graph.clientToLocal(event.clientX, event.clientY);
-            this.addNode(type, label, { x, y });
-        } catch (e) { console.error(e); }
+    copyNode(node: Node) {
+        const data = node.getData();
+        const pos = node.getPosition();
+        this.addNode(data.type, data.label, { x: pos.x + 30, y: pos.y + 30 });
     }
 
-    public apiUpdateNodeData(nodeId: string, newConfig: any, newLabel?: string) {
-        const cell = this.graph.getCellById(nodeId);
-        if (cell && cell.isNode()) {
-            const currentData = cell.getData();
-            let displayLabel = newLabel || currentData.label;
-            cell.setData({ ...currentData, config: newConfig, label: displayLabel });
-            if (displayLabel) cell.attr('label/text', displayLabel);
+    deleteNode(node: Node) {
+        this.graph.removeNode(node);
+        if (this.selectedCell === node) this.selectedCell = null;
+    }
+
+    // ==========================================
+    // ARRASTAR E SOLTAR (DRAG & DROP CANVAS)
+    // ==========================================
+    onDragStart(e: DragEvent, type: string, label: string) {
+        e.dataTransfer?.setData('application/json', JSON.stringify({ type, label }));
+    }
+
+    onDragOver(e: DragEvent) {
+        e.preventDefault();
+    }
+
+    onDrop(e: DragEvent) {
+        e.preventDefault();
+        const dataString = e.dataTransfer?.getData('application/json');
+        if (!dataString) return;
+
+        try {
+            const { type, label } = JSON.parse(dataString);
+            const { x, y } = this.graph.clientToLocal(e.clientX, e.clientY);
+            this.addNode(type, label, { x, y });
+        } catch (e) {
+            console.error("Erro ao processar drop:", e);
         }
     }
 
-    public getExportData() { return { logic: this.graph.toJSON(), graph: this.graph.toJSON() }; }
-    public importData(data: any) { try { const graphData = typeof data === 'string' ? JSON.parse(data) : data; if (!graphData) return false; this.graph.fromJSON(graphData); return true; } catch { return false; } }
-    public clearCanvas() { this.graph.clearCells(); }
-    public confirmClearCanvas() { this.showSystemConfirm('Limpar Fluxo', 'Apagar todo o fluxo?', () => this.clearCanvas()); }
-    triggerFileInput() { document.getElementById('fileInput')?.click(); }
-    onFileSelected(event: any) { const file = event.target.files[0]; if (!file) return; FlowUtils.readJsonFile(file).then(json => this.importData(json)); event.target.value = ''; }
-    selectCell(cell: Cell) { this.resetSelection(); this.selectedCell = cell; cell.isNode() ? cell.attr('body', { stroke: '#ff9c6e', strokeWidth: 3 }) : cell.attr('line', { stroke: '#ff9c6e', strokeWidth: 3 }); }
-    resetSelection() { if (this.selectedCell) { if (this.selectedCell.isNode()) { const type = this.selectedCell.getData()?.type; const tool = this.availableTools.find(t => t.id === type); const strokeColor = tool?.category === 'trigger' ? '#52c41a' : (tool?.category === 'condition' ? '#faad14' : '#1890ff'); this.selectedCell.attr('body', { stroke: strokeColor, strokeWidth: 2 }); } else if (this.selectedCell.isEdge()) { this.selectedCell.attr('line', { stroke: '#5F95FF', strokeWidth: 2 }); } } this.selectedCell = null; }
-    @HostListener('window:keydown', ['$event']) handleKeyDown(event: KeyboardEvent) { if ((event.key === 'Delete' || event.key === 'Backspace') && this.selectedCell) { if (this.selectedCell.isEdge()) { this.graph.removeCell(this.selectedCell); this.selectedCell = null; } } }
-    private showSystemAlert(title: string, message: string, type: string = 'info') { this.modalState = { visible: true, type, title, message, confirmLabel: 'Entendi', pendingAction: null }; this.cdr.detectChanges(); }
-    private showSystemConfirm(title: string, message: string, onConfirm: () => void) { this.modalState = { visible: true, type: 'confirm', title, message, confirmLabel: 'Sim', pendingAction: onConfirm }; }
-    confirmModalAction() { this.modalState.pendingAction?.(); this.closeModal(); }
-    closeModal() { this.modalState.visible = false; this.modalState.pendingAction = null; this.cdr.detectChanges(); }
+    // ==========================================
+    // CONTROLE DE MODAIS (MENSAGEM/ANEXOS/VARIÁVEIS)
+    // ==========================================
+    get filteredVariables() {
+        if (!this.searchVar) return this.variablesList;
+        return this.variablesList.filter(v => v.label.toLowerCase().includes(this.searchVar.toLowerCase()));
+    }
+
+    openVariablesModal(node: Node, x: number, y: number) {
+        this.activeMessageNode = node;
+        this.variablesModalPos = { x, y };
+        this.showVariablesModal = true;
+    }
+
+    insertVariable(val: string) {
+        if (this.activeMessageNode) {
+            const data = this.activeMessageNode.getData();
+            let text = data?.config?.messageText || '';
+            text += (text.length > 0 && !text.endsWith(' ') ? ' ' : '') + val + ' ';
+            this.activeMessageNode.setData({ ...data, config: { ...data.config, messageText: text } });
+        }
+        this.closeMessageModals();
+    }
+
+    openAttachmentModal(node: Node) {
+        this.activeMessageNode = node;
+        this.showAttachmentModal = true;
+    }
+
+    triggerFileInput() {
+        document.getElementById('hidden-file-input')?.click();
+    }
+
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file) this.handleFile(file);
+    }
+
+    onDragOverFile(event: DragEvent) {
+        event.preventDefault();
+        this.isDraggingFile = true;
+    }
+
+    onDragLeaveFile(event: DragEvent) {
+        event.preventDefault();
+        this.isDraggingFile = false;
+    }
+
+    onFileDropArea(event: DragEvent) {
+        event.preventDefault();
+        this.isDraggingFile = false;
+        const file = event.dataTransfer?.files[0];
+        if (file) this.handleFile(file);
+    }
+
+    handleFile(file: File) {
+        if (file.size > 20 * 1024 * 1024) {
+            alert('O arquivo excede o limite de 20MB.');
+            return;
+        }
+        this.selectedFile = file;
+    }
+
+    removeSelectedFile() {
+        this.selectedFile = null;
+        const input = document.getElementById('hidden-file-input') as HTMLInputElement;
+        if (input) input.value = '';
+    }
+
+    confirmAttachment() {
+        if (this.activeMessageNode && this.selectedFile) {
+            const data = this.activeMessageNode.getData();
+            const attachmentData = {
+                name: this.selectedFile.name,
+                size: this.selectedFile.size,
+                type: this.selectedFile.type
+            };
+            this.activeMessageNode.setData({
+                ...data,
+                config: { ...data.config, attachment: attachmentData }
+            });
+        }
+        this.closeMessageModals();
+    }
+
+    closeMessageModals() {
+        this.showAttachmentModal = false;
+        this.showVariablesModal = false;
+        this.activeMessageNode = null;
+        this.searchVar = '';
+        this.selectedFile = null;
+        this.isDraggingFile = false;
+    }
+
+    // ==========================================
+    // INTEGRAÇÃO DE API EXTERNA
+    // ==========================================
+    private setupExternalControls() {
+        if (this.control) {
+            this.control.getExportData = () => ({ logic: this.graph.toJSON() });
+            this.control.importData = (data: any) => {
+                if (!data) return;
+                this.graph.fromJSON(data);
+            };
+            this.control.clearCanvas = () => this.graph.clearCells();
+        }
+    }
 }

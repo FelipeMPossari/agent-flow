@@ -28,14 +28,15 @@
             </div>
             <div class="panel-body">
                 <div class="tool-section" *ngFor="let category of ['trigger', 'condition', 'action']">
-                    <h4>▶ {{ category === 'trigger' ? 'INÍCIO' : (category === 'condition' ? 'CONDIÇÃO' : 'AÇÃO') }}
+                    <h4 [style.color]="getCategoryInfo(category).color">
+                        ▶ {{ getCategoryInfo(category).label }}
                     </h4>
                     <div class="tool-grid">
                         <div class="tool-card" *ngFor="let tool of getToolsByCategory(category)" draggable="true"
                             (dragstart)="onDragStart($event, tool.id, tool.label)">
-                            <div class="card-title"
-                                [style.color]="category === 'trigger' ? '#52c41a' : (category === 'condition' ? '#faad14' : '#1890ff')">
-                                <span class="card-icon">{{ tool.icon }}</span> {{ tool.label }}
+                            <div class="card-title" [style.color]="getCategoryInfo(category).color">
+                                <span class="card-icon">{{ tool.icon }}</span>
+                                {{ tool.label }}
                             </div>
                             <div class="card-desc">{{ tool.description }}</div>
                         </div>
@@ -45,6 +46,73 @@
         </div>
 
         <div #container class="graph-container" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+        </div>
+    </div>
+
+    <div class="fixed-overlay transparent" *ngIf="showVariablesModal" (mousedown)="closeMessageModals()">
+        <div class="floating-popover variables-modal" (mousedown)="$event.stopPropagation()"
+            [style.left.px]="variablesModalPos.x" [style.top.px]="variablesModalPos.y">
+
+            <div class="popover-header">
+                <span>Variáveis</span>
+                <button class="close-btn" (click)="closeMessageModals()">✕</button>
+            </div>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Pesquisar variável" [(ngModel)]="searchVar">
+            </div>
+            <div class="variables-list">
+                <div class="var-item" *ngFor="let v of filteredVariables" (click)="insertVariable(v.value)">
+                    <span>{{ v.label }}</span>
+                    <span class="copy-icon">❐</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed-overlay dark" *ngIf="showAttachmentModal" (mousedown)="closeMessageModals()">
+        <div class="attachment-sidebar" (mousedown)="$event.stopPropagation()">
+
+            <div class="modal-header">
+                <button class="close-btn left" (click)="closeMessageModals()">✕</button>
+                <h2>Anexar arquivo</h2>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active"><span class="upload-icon">↑</span> Novo arquivo</div>
+                <div class="tab">🖼️ Biblioteca de mídia</div>
+            </div>
+
+            <div class="sidebar-body">
+                <input type="file" id="hidden-file-input" style="display: none" (change)="onFileSelected($event)">
+
+                <div class="upload-dropzone" *ngIf="!selectedFile" [class.drag-over]="isDraggingFile"
+                    (click)="triggerFileInput()" (dragover)="onDragOverFile($event)"
+                    (dragleave)="onDragLeaveFile($event)" (drop)="onFileDropArea($event)">
+                    <div class="upload-icon-large">↑</div>
+                    <p>Arraste e solte nesta área seu arquivo, ou clique aqui e procure o arquivo na sua máquina.</p>
+                    <span class="limit">Tamanho máximo 20MB</span>
+                </div>
+
+                <div class="file-preview-card" *ngIf="selectedFile">
+                    <div class="file-info">
+                        <span class="file-icon">📄</span>
+                        <div class="file-details">
+                            <span class="file-name" [title]="selectedFile.name">{{ selectedFile.name }}</span>
+                            <span class="file-size">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+                        </div>
+                    </div>
+                    <button class="remove-file-btn" (click)="removeSelectedFile()">🗑️</button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-primary" [class.disabled]="!selectedFile" [disabled]="!selectedFile"
+                    (click)="confirmAttachment()">
+                    Anexar
+                </button>
+            </div>
+
         </div>
     </div>
 </div>

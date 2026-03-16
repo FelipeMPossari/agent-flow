@@ -18,8 +18,8 @@ const appConfig: ApplicationConfig = {
     const el = createCustomElement(FlowEditorComponent, { injector: app.injector });
 
     // 3. Define o nome da tag HTML customizada
-    // Vamos manter o nome que usamos na diretiva do AngularJS: 'flow-editor-element'
-    if (!customElements.get('flow-editor-element')) {
-        customElements.define('flow-editor-element', el);
+    // Vamos manter o nome que usamos na diretiva do AngularJS: 'agent-flow-element'
+    if (!customElements.get('agent-flow-element')) {
+        customElements.define('agent-flow-element', el);
     }
 })();
