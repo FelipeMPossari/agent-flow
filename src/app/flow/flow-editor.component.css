@@ -9,12 +9,23 @@
 /* ==========================================
    1. FUNDO BASE E ESTRUTURA GERAL
 ========================================== */
-.app-container.dark-theme {
+.app-container {
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100vh;
     font-family: 'Segoe UI', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light Theme (Padrão) */
+.app-container {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* Dark Theme */
+.app-container.dark-theme {
     background-color: #1a1b1e;
     color: #e0e0e0;
 }
@@ -31,6 +42,12 @@
     width: 100%;
     height: 100%;
     outline: none;
+    background-color: #f5f5f5;
+    transition: background-color 0.3s ease;
+}
+
+.app-container.dark-theme .graph-container {
+    background-color: #141517;
 }
 
 /* ==========================================
@@ -38,34 +55,56 @@
 ========================================== */
 .top-header {
     height: 50px;
-    background-color: #141517;
-    border-bottom: 1px solid #2b2f33;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.app-container.dark-theme .top-header {
+    background-color: #141517;
+    border-bottom-color: #2b2f33;
 }
 
 .breadcrumbs {
     font-size: 13px;
-    color: #888;
+    color: #999;
     letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .breadcrumbs {
+    color: #888;
 }
 
 .header-actions {
     cursor: pointer;
+    color: #999;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .header-actions {
     color: #888;
 }
 
 .toolbar {
     height: 56px;
-    background-color: #1a1b1e;
-    border-bottom: 1px solid #2b2f33;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
     z-index: 10;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.app-container.dark-theme .toolbar {
+    background-color: #1a1b1e;
+    border-bottom-color: #2b2f33;
 }
 
 .toolbar-left,
@@ -79,7 +118,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background-color: #3b5998;
+    background-color: #1890ff;
     color: white;
     border: none;
     font-size: 20px;
@@ -92,7 +131,7 @@
 }
 
 .btn-add:hover {
-    background-color: #4c70ba;
+    background-color: #40a9ff;
 }
 
 .btn-add.active {
@@ -102,8 +141,8 @@
 
 .btn-icon {
     background: transparent;
-    border: 1px solid #2b2f33;
-    color: #888;
+    border: 1px solid #ddd;
+    color: #666;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -115,6 +154,16 @@
 }
 
 .btn-icon:hover {
+    border-color: #999;
+    color: #333;
+}
+
+.app-container.dark-theme .btn-icon {
+    border-color: #2b2f33;
+    color: #888;
+}
+
+.app-container.dark-theme .btn-icon:hover {
     border-color: #555;
     color: #fff;
 }
@@ -123,6 +172,12 @@
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .flow-name {
+    color: #fff;
 }
 
 /* ==========================================
@@ -134,14 +189,21 @@
     left: 20px;
     width: 380px;
     max-height: calc(100vh - 150px);
-    background-color: #222529;
-    border: 1px solid #33383d;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
     z-index: 100;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     animation: slideIn 0.2s ease-out;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.app-container.dark-theme .tool-panel {
+    background-color: #222529;
+    border-color: #33383d;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .panel-header {
@@ -149,44 +211,82 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #33383d;
+    border-bottom: 1px solid #e0e0e0;
+    transition: border-color 0.3s ease;
+}
+
+.app-container.dark-theme .panel-header {
+    border-bottom-color: #33383d;
 }
 
 .drag-hint {
     font-size: 14px;
     font-weight: 600;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .drag-hint {
     color: #e0e0e0;
 }
 
 .search-box {
     display: flex;
     align-items: center;
-    background: #141517;
-    border: 1px solid #33383d;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
     border-radius: 20px;
     padding: 4px 12px;
     gap: 8px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.app-container.dark-theme .search-box {
+    background: #141517;
+    border-color: #33383d;
 }
 
 .search-box input {
     background: transparent;
     border: none;
-    color: #fff;
+    color: #333;
     width: 120px;
     font-size: 13px;
     outline: none;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .search-box input {
+    color: #fff;
+}
+
+.search-box input::placeholder {
+    color: #999;
+}
+
+.app-container.dark-theme .search-box input::placeholder {
+    color: #666;
 }
 
 .search-box .close-btn {
     background: none;
     border: none;
-    color: #888;
+    color: #999;
     font-size: 16px;
     cursor: pointer;
     padding: 0;
+    transition: color 0.3s ease;
 }
 
 .search-box .close-btn:hover {
+    color: #333;
+}
+
+.app-container.dark-theme .search-box .close-btn {
+    color: #888;
+}
+
+.app-container.dark-theme .search-box .close-btn:hover {
     color: #fff;
 }
 
@@ -203,16 +303,25 @@
 }
 
 .panel-body::-webkit-scrollbar-thumb {
-    background-color: #444;
+    background-color: #ddd;
     border-radius: 10px;
+}
+
+.app-container.dark-theme .panel-body::-webkit-scrollbar-thumb {
+    background-color: #444;
 }
 
 /* Grid dos Cards de Nós */
 .tool-section h4 {
     margin: 0 0 10px 0;
     font-size: 12px;
-    color: #888;
+    color: #999;
     letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .tool-section h4 {
+    color: #888;
 }
 
 .tool-grid {
@@ -222,8 +331,8 @@
 }
 
 .tool-card {
-    background-color: #2a2e33;
-    border: 1px solid #3a3f45;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
     border-radius: 8px;
     padding: 12px;
     cursor: grab;
@@ -231,13 +340,23 @@
 }
 
 .tool-card:hover {
-    background-color: #32373d;
-    border-color: #555;
+    background-color: #f0f0f0;
+    border-color: #bbb;
     transform: translateY(-2px);
 }
 
 .tool-card:active {
     cursor: grabbing;
+}
+
+.app-container.dark-theme .tool-card {
+    background-color: #2a2e33;
+    border-color: #3a3f45;
+}
+
+.app-container.dark-theme .tool-card:hover {
+    background-color: #32373d;
+    border-color: #555;
 }
 
 .card-title {
@@ -252,8 +371,13 @@
 
 .card-desc {
     font-size: 11px;
-    color: #888;
+    color: #999;
     line-height: 1.4;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .card-desc {
+    color: #888;
 }
 
 
@@ -276,6 +400,10 @@
     justify-content: flex-end;
 }
 
+.app-container.light-theme .fixed-overlay.dark {
+    background: rgba(0, 0, 0, 0.4);
+}
+
 .fixed-overlay.transparent {
     background: transparent;
 }
@@ -284,20 +412,30 @@
     padding: 20px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #2a2e33;
+    border-bottom: 1px solid #e0e0e0;
+    transition: border-color 0.3s ease;
+}
+
+.app-container.dark-theme .modal-header {
+    border-bottom-color: #2a2e33;
 }
 
 .modal-header h2 {
     margin: 0 0 0 16px;
     font-size: 16px;
-    color: #fff;
+    color: #333;
     font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .modal-header h2 {
+    color: #fff;
 }
 
 .close-btn {
     background: none;
     border: none;
-    color: #8a919e;
+    color: #999;
     cursor: pointer;
     font-size: 16px;
     padding: 0;
@@ -307,6 +445,14 @@
 }
 
 .close-btn:hover {
+    color: #333;
+}
+
+.app-container.dark-theme .close-btn {
+    color: #8a919e;
+}
+
+.app-container.dark-theme .close-btn:hover {
     color: #fff;
 }
 
@@ -317,9 +463,14 @@
 
 .modal-footer {
     padding: 16px 24px;
-    border-top: 1px solid #2a2e33;
+    border-top: 1px solid #e0e0e0;
     display: flex;
     justify-content: stretch;
+    transition: border-color 0.3s ease;
+}
+
+.app-container.dark-theme .modal-footer {
+    border-top-color: #2a2e33;
 }
 
 /* Estilos do Botão Primário */
@@ -335,10 +486,16 @@
 
 .btn-primary.disabled,
 .btn-primary:disabled {
-    background: #33383d;
-    color: #8a919e;
+    background: #e0e0e0;
+    color: #999;
     cursor: not-allowed;
     opacity: 0.7;
+}
+
+.app-container.dark-theme .btn-primary.disabled,
+.app-container.dark-theme .btn-primary:disabled {
+    background: #33383d;
+    color: #8a919e;
 }
 
 .btn-primary:not(.disabled):not(:disabled) {
@@ -358,13 +515,20 @@
 .floating-popover {
     position: absolute;
     width: 320px;
-    background-color: #1e2126;
-    border: 1px solid #33383d;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     animation: fadeIn 0.15s ease-out;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.app-container.dark-theme .floating-popover {
+    background-color: #1e2126;
+    border-color: #33383d;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
 .popover-header {
@@ -374,6 +538,11 @@
     align-items: center;
     font-size: 14px;
     font-weight: 600;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .popover-header {
     color: #8a919e;
 }
 
@@ -387,13 +556,20 @@
 
 .floating-popover .search-box input {
     width: 100%;
-    background: #141517;
-    border: 1px solid #1890ff;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
     border-radius: 20px;
     padding: 8px 12px 8px 32px;
-    color: #fff;
+    color: #333;
     font-size: 13px;
     outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.app-container.dark-theme .floating-popover .search-box input {
+    background: #141517;
+    border-color: #1890ff;
+    color: #fff;
 }
 
 .floating-popover .search-icon {
@@ -402,6 +578,11 @@
     top: 50%;
     transform: translateY(-50%);
     font-size: 12px;
+    color: #999;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .floating-popover .search-icon {
     color: #8a919e;
 }
 
@@ -416,8 +597,12 @@
 }
 
 .variables-list::-webkit-scrollbar-thumb {
-    background-color: #444;
+    background-color: #ddd;
     border-radius: 4px;
+}
+
+.app-container.dark-theme .variables-list::-webkit-scrollbar-thumb {
+    background-color: #444;
 }
 
 .var-item {
@@ -430,17 +615,30 @@
     font-size: 13px;
     cursor: pointer;
     border-radius: 8px;
-    border-bottom: 1px solid #2a2e33;
+    border-bottom: 1px solid #e0e0e0;
     transition: 0.2s;
 }
 
+.app-container.dark-theme .var-item {
+    border-bottom-color: #2a2e33;
+}
+
 .var-item:hover {
+    background-color: #f0f0f0;
+}
+
+.app-container.dark-theme .var-item:hover {
     background-color: #2a2e33;
 }
 
 .copy-icon {
-    color: #8a919e;
+    color: #999;
     font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .copy-icon {
+    color: #8a919e;
 }
 
 
@@ -448,26 +646,38 @@
    6. MODAL DE ANEXO (SIDEBAR DIREITA)
 ========================================== */
 .attachment-sidebar {
-    width: 450px;
+    width: 900px;
     height: 100%;
-    background-color: #1e2126;
-    border-left: 1px solid #33383d;
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    background-color: #fff;
+    border-left: 1px solid #e0e0e0;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.app-container.dark-theme .attachment-sidebar {
+    background-color: #1e2126;
+    border-left-color: #33383d;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
 .tabs {
     display: flex;
     padding: 0 20px;
-    border-bottom: 1px solid #2a2e33;
+    border-bottom: 1px solid #e0e0e0;
+    transition: border-color 0.3s ease;
+}
+
+.app-container.dark-theme .tabs {
+    border-bottom-color: #2a2e33;
 }
 
 .tab {
     padding: 16px 0;
     margin-right: 24px;
-    color: #8a919e;
+    color: #999;
     font-size: 14px;
     cursor: pointer;
     border-bottom: 2px solid transparent;
@@ -478,6 +688,10 @@
     color: #1890ff;
     border-bottom-color: #1890ff;
     font-weight: 500;
+}
+
+.app-container.dark-theme .tab {
+    color: #8a919e;
 }
 
 .upload-icon {
@@ -493,14 +707,14 @@
 
 /* Zona de Drag & Drop */
 .upload-dropzone {
-    border: 1px dashed #4a4d52;
+    border: 1px dashed #bbb;
     border-radius: 12px;
     padding: 40px 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background: #141517;
+    background: #f9f9f9;
     cursor: pointer;
     transition: border-color 0.2s, background-color 0.2s;
 }
@@ -511,6 +725,19 @@
 
 .upload-dropzone.drag-over {
     border-color: #1890ff;
+    background-color: rgba(24, 144, 255, 0.05);
+}
+
+.app-container.dark-theme .upload-dropzone {
+    border-color: #4a4d52;
+    background: #141517;
+}
+
+.app-container.dark-theme .upload-dropzone:hover {
+    border-color: #1890ff;
+}
+
+.app-container.dark-theme .upload-dropzone.drag-over {
     background-color: rgba(24, 144, 255, 0.1);
 }
 
@@ -522,15 +749,25 @@
 }
 
 .upload-dropzone p {
-    color: #e0e0e0;
+    color: #333;
     font-size: 14px;
     margin: 0 0 8px;
     line-height: 1.5;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .upload-dropzone p {
+    color: #e0e0e0;
 }
 
 .upload-dropzone .limit {
-    color: #8a919e;
+    color: #999;
     font-size: 12px;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .upload-dropzone .limit {
+    color: #8a919e;
 }
 
 /* Card do Arquivo Anexado */
@@ -538,11 +775,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #141517;
-    border: 1px solid #33383d;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
     padding: 12px 16px;
     margin-top: 16px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.app-container.dark-theme .file-preview-card {
+    background: #141517;
+    border-color: #33383d;
 }
 
 .file-info {
@@ -563,17 +806,27 @@
 }
 
 .file-name {
-    color: #e0e0e0;
+    color: #333;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 250px;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .file-name {
+    color: #e0e0e0;
 }
 
 .file-size {
-    color: #8a919e;
+    color: #999;
     font-size: 12px;
+    transition: color 0.3s ease;
+}
+
+.app-container.dark-theme .file-size {
+    color: #8a919e;
 }
 
 .remove-file-btn {
@@ -626,4 +879,823 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ==========================================
+   8. ESTILOS ESPECÍFICOS PARA CONDIÇÕES
+========================================== */
+.condition-group-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.app-container.dark-theme .condition-group-form {
+    border-bottom-color: #33383d;
+}
+
+.sidebar-body .form-group {
+    margin: 0;
+}
+
+.sidebar-body .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+    font-size: 13px;
+}
+
+.app-container.dark-theme .sidebar-body .form-group label {
+    color: #e0e0e0;
+}
+
+.sidebar-body .form-group input,
+.sidebar-body .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-container.dark-theme .sidebar-body .form-group input,
+.app-container.dark-theme .sidebar-body .form-group select {
+    background-color: #2a2e33;
+    border-color: #33383d;
+    color: #e0e0e0;
+}
+
+.sidebar-body .form-group input:focus,
+.sidebar-body .form-group select:focus {
+    outline: none;
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.btn-add-condition {
+    color: #1890ff;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    transition: opacity 0.2s ease;
+}
+
+.btn-add-condition:hover {
+    opacity: 0.8;
+}
+
+.condition-groups-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.condition-group-item {
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.app-container.dark-theme .condition-group-item {
+    background-color: #2a2e33;
+    border-color: #33383d;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 12px;
+}
+
+.app-container.dark-theme .group-header {
+    border-bottom-color: #33383d;
+}
+
+.group-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    flex: 1;
+}
+
+.app-container.dark-theme .group-name {
+    color: #e0e0e0;
+}
+
+.btn-remove {
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+}
+
+.btn-remove:hover {
+    opacity: 0.8;
+}
+
+.btn-remove-group {
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-remove-group:hover {
+    opacity: 0.8;
+}
+
+.btn-remove-condition {
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-remove-condition:hover {
+    opacity: 0.8;
+}
+
+.group-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8a919e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 60px;
+}
+
+.app-container.dark-theme .group-label {
+    color: #8a919e;
+}
+
+.group-conditions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+.condition-item {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+}
+
+.condition-item>.custom-select-container,
+.condition-item>.value-field-wrapper {
+    flex: 1;
+    min-width: 140px;
+}
+
+.condition-item>.custom-select-container:not(:first-child) {
+    margin-left: 8px;
+}
+
+.input-condition {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    min-width: 0;
+    width: 100%;
+}
+
+.input-condition:focus {
+    outline: none;
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.app-container.dark-theme .input-condition {
+    background-color: #2a2e33;
+    border-color: #33383d;
+    color: #e0e0e0;
+}
+
+.app-container.dark-theme .input-condition:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.input-condition:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f5f5f5;
+}
+
+.app-container.dark-theme .input-condition:disabled {
+    background-color: #1e2126;
+}
+
+.value-field-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.btn-add-to-group {
+    color: #1890ff;
+    background: none;
+    border: none;
+    padding: 6px 0;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+}
+
+.btn-add-to-group:hover {
+    opacity: 0.8;
+}
+
+.btn-add-else-group {
+    color: #333;
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.app-container.dark-theme .btn-add-else-group {
+    border-color: #33383d;
+    color: #e0e0e0;
+}
+
+.btn-add-else-group:hover {
+    background-color: #f5f5f5;
+    border-color: #999;
+}
+
+.app-container.dark-theme .btn-add-else-group:hover {
+    background-color: #2a2e33;
+    border-color: #8a919e;
+}
+
+.condition-info {
+    background-color: #fff7e6;
+    border: 1px solid #ffd591;
+    color: #ad6800;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.app-container.dark-theme .condition-info {
+    background-color: #4a3618;
+    border-color: #5a3f1a;
+    color: #faad14;
+}
+
+.sidebar-body.help-content {
+    padding: 30px 24px;
+}
+
+.sidebar-body.help-content h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.app-container.dark-theme .sidebar-body.help-content h3 {
+    color: #fff;
+}
+
+.sidebar-body.help-content p {
+    color: #666;
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+}
+
+.app-container.dark-theme .sidebar-body.help-content p {
+    color: #b3b3b3;
+}
+
+.sidebar-body.help-content ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #666;
+}
+
+.app-container.dark-theme .sidebar-body.help-content ul {
+    color: #b3b3b3;
+}
+
+.sidebar-body.help-content ul li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* ==========================================
+   9. MODAL DE NOTIFICAÇÃO
+========================================== */
+.notification-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 60px;
+    pointer-events: none;
+    z-index: 10000000;
+}
+
+.notification-container {
+    pointer-events: all;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    max-width: 500px;
+    width: 90%;
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+.notification-container.closing {
+    animation: fadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Estilos por tipo de notificação */
+.notification-error {
+    background-color: #fff2f0;
+    border: 1px solid #ffccc7;
+    border-left: 4px solid #ff4d4f;
+}
+
+.app-container.dark-theme .notification-error {
+    background-color: #2f1515;
+    border-color: #58181c;
+    border-left-color: #ff4d4f;
+}
+
+.notification-warning {
+    background-color: #fffbe6;
+    border: 1px solid #ffe58f;
+    border-left: 4px solid #faad14;
+}
+
+.app-container.dark-theme .notification-warning {
+    background-color: #2b2111;
+    border-color: #594214;
+    border-left-color: #faad14;
+}
+
+.notification-success {
+    background-color: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-left: 4px solid #52c41a;
+}
+
+.app-container.dark-theme .notification-success {
+    background-color: #162312;
+    border-color: #274916;
+    border-left-color: #52c41a;
+}
+
+.notification-info {
+    background-color: #e6f7ff;
+    border: 1px solid #91d5ff;
+    border-left: 4px solid #1890ff;
+}
+
+.app-container.dark-theme .notification-info {
+    background-color: #111b26;
+    border-color: #15395b;
+    border-left-color: #1890ff;
+}
+
+.notification-header {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
+    align-items: flex-start;
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.notification-error .notification-icon {
+    background-color: rgba(255, 77, 79, 0.2);
+    color: #ff4d4f;
+}
+
+.app-container.dark-theme .notification-error .notification-icon {
+    background-color: rgba(255, 77, 79, 0.3);
+    color: #ff7875;
+}
+
+.notification-warning .notification-icon {
+    background-color: rgba(250, 173, 20, 0.2);
+    color: #faad14;
+}
+
+.app-container.dark-theme .notification-warning .notification-icon {
+    background-color: rgba(250, 173, 20, 0.3);
+    color: #ffc53d;
+}
+
+.notification-success .notification-icon {
+    background-color: rgba(82, 196, 26, 0.2);
+    color: #52c41a;
+}
+
+.app-container.dark-theme .notification-success .notification-icon {
+    background-color: rgba(82, 196, 26, 0.3);
+    color: #95de64;
+}
+
+.notification-info .notification-icon {
+    background-color: rgba(24, 144, 255, 0.2);
+    color: #1890ff;
+}
+
+.app-container.dark-theme .notification-info .notification-icon {
+    background-color: rgba(24, 144, 255, 0.3);
+    color: #69b1ff;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.notification-error .notification-title {
+    color: #cf1322;
+}
+
+.app-container.dark-theme .notification-error .notification-title {
+    color: #ff7875;
+}
+
+.notification-warning .notification-title {
+    color: #ad6800;
+}
+
+.app-container.dark-theme .notification-warning .notification-title {
+    color: #ffc53d;
+}
+
+.notification-success .notification-title {
+    color: #389e0d;
+}
+
+.app-container.dark-theme .notification-success .notification-title {
+    color: #95de64;
+}
+
+.notification-info .notification-title {
+    color: #0050b3;
+}
+
+.app-container.dark-theme .notification-info .notification-title {
+    color: #69b1ff;
+}
+
+.notification-message {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.notification-error .notification-message {
+    color: #cf1322;
+}
+
+.app-container.dark-theme .notification-error .notification-message {
+    color: #ff9c9e;
+}
+
+.notification-warning .notification-message {
+    color: #ad6800;
+}
+
+.app-container.dark-theme .notification-warning .notification-message {
+    color: #ffd666;
+}
+
+.notification-success .notification-message {
+    color: #389e0d;
+}
+
+.app-container.dark-theme .notification-success .notification-message {
+    color: #b7eb8f;
+}
+
+.notification-info .notification-message {
+    color: #0050b3;
+}
+
+.app-container.dark-theme .notification-info .notification-message {
+    color: #91d5ff;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    opacity: 0.6;
+}
+
+.notification-progress {
+    height: 3px;
+    background-color: transparent;
+    overflow: hidden;
+}
+
+.notification-error .progress-bar {
+    background-color: #ff4d4f;
+}
+
+.notification-warning .progress-bar {
+    background-color: #faad14;
+}
+
+.notification-success .progress-bar {
+    background-color: #52c41a;
+}
+
+.notification-info .progress-bar {
+    background-color: #1890ff;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 100%;
+    animation: progressAnimation 4s linear forwards;
+}
+
+@keyframes progressAnimation {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+/* ==========================================
+   10. CUSTOM SELECT (CONDITION MODAL)
+========================================== */
+.custom-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select-container:has(.dropdown-menu) {
+    z-index: 10001;
+}
+
+
+
+.value-field-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.select-trigger {
+    background-color: #141517;
+    color: #fff;
+    border: 1px solid #33383d;
+    padding: 5px 8px;
+    border-radius: 20px;
+    outline: none;
+    width: 100%;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+/* Light Theme - Select Trigger */
+.app-container:not(.dark-theme) .select-trigger {
+    background-color: #f5f5f5;
+    color: #333;
+    border-color: #ddd;
+}
+
+/* Dark Theme - Select Trigger */
+.app-container.dark-theme .select-trigger {
+    background-color: #141517;
+    color: #e0e0e0;
+    border-color: #33383d;
+}
+
+.select-trigger:not(.disabled):hover,
+.select-trigger.active {
+    border-color: #52c41a;
+}
+
+.app-container:not(.dark-theme) .select-trigger:not(.disabled):hover,
+.app-container:not(.dark-theme) .select-trigger.active {
+    border-color: #52c41a;
+    background-color: #fff;
+}
+
+.select-trigger.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.select-trigger .arrow {
+    font-size: 10px;
+    color: #888;
+    transition: transform 0.2s;
+}
+
+.app-container:not(.dark-theme) .select-trigger .arrow {
+    color: #999;
+}
+
+.select-trigger.active .arrow {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #2a2e33;
+    border: 1px solid #3a3f45;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    animation: slideDown 0.15s ease-out;
+    transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Light Theme - Dropdown Menu */
+.app-container:not(.dark-theme) .dropdown-menu {
+    background-color: #fff;
+    border-color: #ddd;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Dark Theme - Dropdown Menu */
+.app-container.dark-theme .dropdown-menu {
+    background-color: #2a2e33;
+    border-color: #3a3f45;
+}
+
+.options-list {
+    max-height: 130px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.options-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.options-list::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 4px;
+}
+
+.app-container:not(.dark-theme) .options-list::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+}
+
+.option {
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #ccc;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+/* Light Theme - Option */
+.app-container:not(.dark-theme) .option {
+    color: #666;
+}
+
+.option:hover {
+    background-color: #32373d;
+    color: #fff;
+}
+
+.app-container:not(.dark-theme) .option:hover {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.option.selected {
+    color: #52c41a;
+    font-weight: 600;
+    background-color: rgba(82, 196, 26, 0.1);
+}
+
+.app-container:not(.dark-theme) .option.selected {
+    color: #52c41a;
+    background-color: rgba(82, 196, 26, 0.05);
 }

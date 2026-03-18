@@ -1,4 +1,4 @@
-<div class="app-container dark-theme">
+<div class="app-container" [class.dark-theme]="(themeService.theme$ | async) === 'dark'">
 
     <header class="top-header">
         <div class="breadcrumbs">Configurações / Chatbots / Fluxo</div>
@@ -111,6 +111,202 @@
                     (click)="confirmAttachment()">
                     Anexar
                 </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURAÇÃO DE CONDIÇÃO -->
+    <div class="fixed-overlay dark" *ngIf="showConditionModal" (mousedown)="closeConditionModal()">
+        <div class="attachment-sidebar" (mousedown)="$event.stopPropagation()">
+
+            <div class="modal-header">
+                <button class="close-btn left" (click)="closeConditionModal()">✕</button>
+                <h2>Definir condição</h2>
+            </div>
+
+            <div class="tabs">
+                <div class="tab" [class.active]="activeTabCondition === 'Configurações'"
+                    (click)="changeConditionTab('Configurações')">
+                    Configurações
+                </div>
+                <div class="tab" [class.active]="activeTabCondition === 'Ajuda'" (click)="changeConditionTab('Ajuda')">
+                    Ajuda
+                </div>
+            </div>
+
+            <div class="sidebar-body" *ngIf="activeTabCondition === 'Configurações'">
+
+                <div class="condition-group-form">
+                    <div class="form-group">
+                        <label>Nome do grupo de condições</label>
+                        <input type="text" [(ngModel)]="conditionGroupName" placeholder="Ex: Validar dados">
+                    </div>
+
+                    <button class="btn-add-condition" (click)="addConditionGroup()">
+                        +Adicionar condição
+                    </button>
+                </div>
+
+                <div class="condition-groups-list">
+                    <div class="condition-group-item" *ngFor="let group of conditionGroups; let i = index">
+                        <div class="group-header">
+                            <span class="group-label" *ngIf="i === 0">Quando:</span>
+                            <span class="group-label" *ngIf="i > 0">E se:</span>
+                            <span class="group-name">{{ group.name }}</span>
+                            <button class="btn-remove-group" (click)="removeConditionGroup(group.id)"
+                                title="Remover grupo">🗑️</button>
+                        </div>
+
+                        <div class="group-conditions">
+                            <div class="condition-item" *ngFor="let condition of group.conditions">
+                                <!-- Custom Select for Property -->
+                                <div class="custom-select-container" (mousedown)="$event.stopPropagation()">
+                                    <div class="select-trigger" (click)="toggleDropdown(condition.id, 'property')"
+                                        [class.active]="openDropdowns[condition.id + '-property']">
+                                        <span>{{ getSelectedPropertyLabel(condition.property) }}</span>
+                                        <span class="arrow">▼</span>
+                                    </div>
+                                    <div class="dropdown-menu" *ngIf="openDropdowns[condition.id + '-property']">
+                                        <div class="options-list">
+                                            <div class="option"
+                                                (click)="condition.property = ''; condition.operator = ''; condition.value = ''; toggleDropdown(condition.id, 'property')">
+                                                Propriedade
+                                            </div>
+                                            <div class="option" *ngFor="let prop of availableProperties"
+                                                (click)="condition.property = prop.value; condition.operator = ''; condition.value = ''; toggleDropdown(condition.id, 'property')"
+                                                [class.selected]="condition.property === prop.value">
+                                                {{ prop.label }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Select for Operator -->
+                                <div class="custom-select-container" (mousedown)="$event.stopPropagation()">
+                                    <div class="select-trigger" (click)="toggleDropdown(condition.id, 'operator')"
+                                        [class.active]="openDropdowns[condition.id + '-operator']"
+                                        [class.disabled]="!condition.property">
+                                        <span>{{ getSelectedOperatorLabel(condition.operator, condition.property)
+                                            }}</span>
+                                        <span class="arrow">▼</span>
+                                    </div>
+                                    <div class="dropdown-menu"
+                                        *ngIf="openDropdowns[condition.id + '-operator'] && condition.property">
+                                        <div class="options-list">
+                                            <div class="option"
+                                                (click)="condition.operator = ''; condition.value = ''; toggleDropdown(condition.id, 'operator')">
+                                                Operador
+                                            </div>
+                                            <div class="option"
+                                                *ngFor="let op of getOperatorsForProperty(condition.property)"
+                                                (click)="condition.operator = op.value; condition.value = ''; toggleDropdown(condition.id, 'operator')"
+                                                [class.selected]="condition.operator === op.value">
+                                                {{ op.label }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Campo de valor dinâmico baseado no tipo de propriedade -->
+                                <div class="value-field-wrapper"
+                                    *ngIf="condition.operator && !['is_empty', 'is_not_empty'].includes(condition.operator)">
+                                    <!-- Custom Select para propriedades do tipo lista -->
+                                    <div *ngIf="getPropertyType(condition.property) === 'select'"
+                                        class="custom-select-container" (mousedown)="$event.stopPropagation()">
+                                        <div class="select-trigger" (click)="toggleDropdown(condition.id, 'value')"
+                                            [class.active]="openDropdowns[condition.id + '-value']">
+                                            <span>{{ getSelectedValueLabel(condition.value, condition.property)
+                                                }}</span>
+                                            <span class="arrow">▼</span>
+                                        </div>
+                                        <div class="dropdown-menu" *ngIf="openDropdowns[condition.id + '-value']">
+                                            <div class="options-list">
+                                                <div class="option"
+                                                    (click)="condition.value = ''; toggleDropdown(condition.id, 'value')">
+                                                    Selecione
+                                                </div>
+                                                <div class="option"
+                                                    *ngFor="let opt of getPropertyOptions(condition.property)"
+                                                    (click)="condition.value = opt.value; toggleDropdown(condition.id, 'value')"
+                                                    [class.selected]="condition.value === opt.value">
+                                                    {{ opt.label }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- INPUT DATE para propriedades do tipo data -->
+                                    <input type="date" [(ngModel)]="condition.value" class="input-condition"
+                                        *ngIf="getPropertyType(condition.property) === 'date'"
+                                        [disabled]="!condition.operator">
+
+                                    <!-- INPUT TEXT para propriedades de texto -->
+                                    <input type="text" [(ngModel)]="condition.value" placeholder="Valor"
+                                        class="input-condition" *ngIf="getPropertyType(condition.property) === 'text'"
+                                        [disabled]="!condition.operator">
+                                </div>
+
+                                <button class="btn-remove-condition" (click)="removeCondition(group.id, condition.id)"
+                                    title="Remover condição">🗑️</button>
+                            </div>
+
+                            <button class="btn-add-to-group" (click)="addConditionToGroup(group.id)">
+                                + Adicionar condição
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-add-else-group" (click)="addConditionGroup()">
+                    Senão, adicionar condição
+                </button>
+
+                <div class="condition-info">
+                    É necessário definir um tipo de condição para cada uma das condições.
+                </div>
+            </div>
+
+            <div class="sidebar-body help-content" *ngIf="activeTabCondition === 'Ajuda'">
+                <h3>Como configurar condições</h3>
+                <p>Use este painel para definir grupos de condições que serão avaliadas no seu fluxo.</p>
+                <ul>
+                    <li><strong>Nome do grupo:</strong> Identifique o propósito deste grupo</li>
+                    <li><strong>Se:</strong> Escolha se todas ou qualquer uma das condições devem ser atendidas</li>
+                    <li><strong>Condições:</strong> Adicione as regras que devem ser validadas</li>
+                </ul>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-primary" (click)="confirmConditions()">
+                    Confirmar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL DE NOTIFICAÇÃO -->
+    <div class="notification-overlay" *ngIf="showNotificationModal" (click)="closeNotification()">
+        <div class="notification-container" [class]="'notification-' + notificationType"
+            [class.closing]="isClosingNotification" (click)="$event.stopPropagation()">
+
+            <div class="notification-header">
+                <div class="notification-icon">
+                    <span *ngIf="notificationType === 'error'">✕</span>
+                    <span *ngIf="notificationType === 'warning'">!</span>
+                    <span *ngIf="notificationType === 'success'">✓</span>
+                    <span *ngIf="notificationType === 'info'">ℹ</span>
+                </div>
+                <div class="notification-content">
+                    <h3 class="notification-title">{{ notificationTitle }}</h3>
+                    <p class="notification-message">{{ notificationMessage }}</p>
+                </div>
+                <button class="notification-close" (click)="closeNotification()">✕</button>
+            </div>
+
+            <div class="notification-progress" *ngIf="showNotificationModal">
+                <div class="progress-bar"></div>
             </div>
 
         </div>

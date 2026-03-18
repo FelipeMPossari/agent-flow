@@ -1,5 +1,7 @@
 import { Shape } from '@antv/x6';
 
+export type ThemeType = 'light' | 'dark';
+
 export const LABEL_STYLE = {
     fill: '#e0e0e0', // Texto claro para o Dark Mode
     fontSize: 14,
@@ -17,16 +19,30 @@ export const LABEL_STYLE = {
 };
 
 // Portas genéricas (podemos ter múltiplas saídas dinâmicas depois)
-export const PORT_GROUPS = {
-    in: {
-        position: 'left',
-        attrs: { circle: { r: 5, magnet: true, stroke: '#5F95FF', fill: '#2b2f33', strokeWidth: 2 } }
-    },
-    out: {
-        position: 'right',
-        attrs: { circle: { r: 5, magnet: true, stroke: '#5F95FF', fill: '#2b2f33', strokeWidth: 2 } }
-    }
+export const getPortGroups = (theme: ThemeType) => {
+    const isDark = theme === 'dark';
+    const portStyle = {
+        r: 5,
+        magnet: true,
+        stroke: '#5F95FF',
+        strokeWidth: 2,
+        fill: isDark ? '#2b2f33' : '#FFFFFF'
+    };
+
+    return {
+        in: {
+            position: 'left',
+            attrs: { circle: portStyle }
+        },
+        out: {
+            position: 'right',
+            attrs: { circle: portStyle }
+        }
+    };
 };
+
+// Mantém uma exportação padrão para compatibilidade inicial
+export const PORT_GROUPS = getPortGroups('light');
 
 export const validateConnectionRule = ({ sourceMagnet, targetMagnet, sourceView, targetView }: any) => {
     if (!sourceMagnet || !targetMagnet || !sourceView || !targetView) return false;
@@ -46,39 +62,45 @@ export const validateConnectionRule = ({ sourceMagnet, targetMagnet, sourceView,
     return true;
 };
 
-export const getGraphOptions = (container: HTMLElement) => ({
-    container: container,
-    grid: { size: 20, visible: true, type: 'mesh', args: { color: '#333' } },
-    background: { color: '#1e1e1e' },
-    panning: true,
-    mousewheel: { enabled: true, modifiers: ['ctrl', 'meta'] as ('ctrl' | 'meta')[] },
-    interacting: true,
-    connecting: {
-        router: { name: 'normal' },
-        connector: { name: 'smooth' },
+export const getGraphOptions = (container: HTMLElement, theme: ThemeType = 'light') => {
+    const isDark = theme === 'dark';
+    const gridColor = isDark ? '#333' : '#e5e5e5';
+    const backgroundColor = isDark ? '#1e1e1e' : '#f5f5f5';
 
-        anchor: 'center',
-        connectionPoint: 'boundary',
-        snap: true,
-        allowBlank: false,
-        highlight: true,
-        createEdge() {
-            return new Shape.Edge({
-                attrs: {
-                    line: {
-                        stroke: '#5F95FF',
-                        strokeWidth: 2,
-                        // Suavizei um pouco a seta para combinar com a curva
-                        targetMarker: {
-                            name: 'block',
-                            width: 10,
-                            height: 7
+    return {
+        container: container,
+        grid: { size: 20, visible: true, type: 'mesh', args: { color: gridColor } },
+        background: { color: backgroundColor },
+        panning: true,
+        mousewheel: { enabled: true, modifiers: ['ctrl', 'meta'] as ('ctrl' | 'meta')[] },
+        interacting: true,
+        connecting: {
+            router: { name: 'normal' },
+            connector: { name: 'smooth' },
+
+            anchor: 'center',
+            connectionPoint: 'boundary',
+            snap: true,
+            allowBlank: false,
+            highlight: true,
+            createEdge() {
+                return new Shape.Edge({
+                    attrs: {
+                        line: {
+                            stroke: '#5F95FF',
+                            strokeWidth: 2,
+                            // Suavizei um pouco a seta para combinar com a curva
+                            targetMarker: {
+                                name: 'block',
+                                width: 10,
+                                height: 7
+                            }
                         }
-                    }
-                },
-                zIndex: 0
-            });
+                    },
+                    zIndex: 0
+                });
+            },
+            validateConnection: validateConnectionRule
         },
-        validateConnection: validateConnectionRule
-    },
-});
+    };
+};

@@ -2,13 +2,14 @@ import { Component, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Node } from '@antv/x6';
 import { FlowService } from '../flow/flow.service';
+import { ThemeService } from '../flow/theme.service';
 
 @Component({
     selector: 'app-node-wrapper',
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="custom-node-wrapper">
+    <div class="custom-node-wrapper" [class.dark-wrapper]="(themeService.theme$ | async) === 'dark'">
       
       <div class="node-toolbar" (mousedown)="$event.stopPropagation(); $event.preventDefault()">
         <button class="toolbar-btn copy-btn" (click)="copyNode($event)" title="Duplicar">
@@ -38,13 +39,13 @@ import { FlowService } from '../flow/flow.service';
       position: absolute;
       top: -46px; 
       left: 3px; 
-      background-color: #1e2126; /* Fundo sólido da pílula */
+      background-color: #1e2126;
       border: 1px solid #33383d;
       border-radius: 12px;
       display: flex; 
       align-items: center; 
-      gap: 4px; /* Espaço pequeno entre os quadrados dos botões */
-      padding: 4px; /* Margem interna menor para a pílula */
+      gap: 4px;
+      padding: 4px;
       z-index: 1000;
       opacity: 0; 
       visibility: hidden; 
@@ -53,13 +54,19 @@ import { FlowService } from '../flow/flow.service';
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     
+    /* Light Theme */
+    .custom-node-wrapper:not(.dark-wrapper) .node-toolbar { 
+      background-color: #fff; 
+      border-color: #ddd;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
     .custom-node-wrapper:hover .node-toolbar { 
         opacity: 1; 
         visibility: visible; 
         transform: translateY(0);
     }
     
-    /* --- ESTILO DO QUADRADO COM HOVER NO FUNDO DO ÍCONE --- */
     .toolbar-btn { 
       background: transparent; 
       border: none; 
@@ -67,30 +74,34 @@ import { FlowService } from '../flow/flow.service';
       display: flex; 
       align-items: center; 
       justify-content: center;
-      
-      /* Define o quadrado */
       width: 32px; 
       height: 32px; 
-      border-radius: 8px; /* Cantos levemente arredondados no quadrado */
-      
+      border-radius: 8px;
       padding: 0;
       transition: all 0.2s;
     }
 
-    /* Cores padrão dos ícones baseadas no print image_5db017.png */
     .copy-btn .icon { color: #8a919e; font-size: 15px; }
+    .custom-node-wrapper:not(.dark-wrapper) .copy-btn .icon { color: #999; }
+    
     .delete-btn .icon { color: #e57373; font-size: 15px; } 
 
-    /* --- O EFEITO DE HOVER NO FUNDO DO ÍCONE --- */
     .copy-btn:hover { 
-        background-color: #383d44; /* Fundo mais claro que a pílula */
+        background-color: #383d44;
     }
+    .custom-node-wrapper:not(.dark-wrapper) .copy-btn:hover { 
+        background-color: #f0f0f0;
+    }
+    
     .copy-btn:hover .icon { 
-        color: #ffffff; 
+        color: #ffffff;
+    }
+    .custom-node-wrapper:not(.dark-wrapper) .copy-btn:hover .icon {
+        color: #333;
     }
 
     .delete-btn:hover { 
-        background-color: #ff4d4f; /* Um fundo avermelhado escuro */
+        background-color: #ff4d4f;
     }
 
     .node-content { 
@@ -101,9 +112,8 @@ import { FlowService } from '../flow/flow.service';
 })
 export class NodeWrapperComponent {
 
-    constructor(private eRef: ElementRef) { }
+    constructor(private eRef: ElementRef, public themeService: ThemeService) { }
 
-    // --- A MÁGICA QUE RESOLVEU O UNDEFINED --- //
     private getNode(): Node | null {
         if (!FlowService.graph) return null;
         const view = FlowService.graph.findViewByElem(this.eRef.nativeElement);
