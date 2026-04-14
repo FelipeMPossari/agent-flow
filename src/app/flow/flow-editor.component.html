@@ -1,18 +1,8 @@
 <div class="app-container" [class.dark-theme]="(themeService.theme$ | async) === 'dark'">
 
-    <header class="top-header">
-        <div class="breadcrumbs">Configurações / Chatbots / Fluxo</div>
-        <div class="header-actions">
-            <span class="icon-btn">🔍</span>
-        </div>
-    </header>
-
     <div class="toolbar">
         <div class="toolbar-left">
             <button class="btn-add" [class.active]="showToolMenu" (click)="toggleToolMenu()">+</button>
-        </div>
-        <div class="toolbar-right">
-            <span class="flow-name">Fluxo ✏️</span>
         </div>
     </div>
 
