@@ -45,20 +45,28 @@ export const getPortGroups = (theme: ThemeType) => {
 export const PORT_GROUPS = getPortGroups('light');
 
 export const validateConnectionRule = ({ sourceMagnet, targetMagnet, sourceView, targetView }: any) => {
+    // 1. Validações básicas
     if (!sourceMagnet || !targetMagnet || !sourceView || !targetView) return false;
 
     const sourceGroup = sourceMagnet.getAttribute('port-group');
     const targetGroup = targetMagnet.getAttribute('port-group');
 
-    // 1. Sentido Obrigatório: Uma porta 'out' só liga numa porta 'in'
-    if (sourceGroup === targetGroup) return false;
-    if (sourceGroup === 'in') return false;
+    // 2. Garantir que a SOURCE é sempre uma porta de SAÍDA ('out')
+    if (sourceGroup !== 'out') return false;
 
-    // 2. Nó de Início (Gatilho) não pode receber conexões de volta
+    // 3. Garantir que o TARGET é sempre uma porta de ENTRADA ('in')
+    if (targetGroup !== 'in') return false;
+
+    // 4. Bloquear self-loops (um nó não pode se conectar a si mesmo)
+    const sourceNodeId = sourceView.cell.id;
+    const targetNodeId = targetView.cell.id;
+    if (sourceNodeId === targetNodeId) return false;
+
+    // 5. Nó de Início (Gatilho) não pode receber conexões de volta
     const targetType = targetView.cell.getData()?.type;
     if (targetType === 'start_channel' || targetType === 'start_manual') return false;
 
-    // Removemos todas as outras regras! Loops são permitidos em Chatbots.
+    // Apenas conexões válidas passam
     return true;
 };
 

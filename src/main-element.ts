@@ -25,8 +25,6 @@ const appConfig: ApplicationConfig = {
         if (!customElements.get('agent-flow-element')) {
             customElements.define('agent-flow-element', el);
         }
-
-        console.log('[agent-flow] Web Component registrado com sucesso: agent-flow-element');
     } catch (err) {
         console.error('[agent-flow] Erro ao registrar Web Component:', err);
     }

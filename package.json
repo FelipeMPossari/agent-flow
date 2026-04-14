@@ -6,6 +6,7 @@
         "start": "ng serve --configuration element",
         "build": "ng build",
         "build:element": "ng build --configuration element",
+        "build:element:dev": "ng build --configuration element --output-hashing=none",
         "build:element:prod": "ng build --configuration element,production",
         "watch": "ng build --watch --configuration development",
         "watch:element": "ng build --watch --configuration element",

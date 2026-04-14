@@ -17,6 +17,5 @@ export class AppComponent {
     };
 
     onSaveGraph(data: WorkflowDefinition) {
-        console.log('Grafo salvo!', data);
     }
 }

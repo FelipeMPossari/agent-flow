@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, NgZone, ChangeDetectorRef, Input, Output, EventEmitter, Injector, HostListener } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, NgZone, ChangeDetectorRef, Input, Output, EventEmitter, Injector, HostListener, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Graph, Cell, Node } from '@antv/x6';
@@ -19,7 +19,7 @@ import { ThemeService } from './theme.service';
     templateUrl: './flow-editor.component.html',
     styleUrls: ['./flow-editor.component.css']
 })
-export class FlowEditorComponent implements AfterViewInit {
+export class FlowEditorComponent implements AfterViewInit, OnChanges {
     // --- ELEMENTOS E COMUNICAÇÃO ---
     @ViewChild('container', { static: true }) container!: ElementRef;
     @Input() control: any;
@@ -136,6 +136,12 @@ export class FlowEditorComponent implements AfterViewInit {
         this.initGraph();
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['control'] && this.control && this.graph) {
+            this.setupExternalControls();
+        }
+    }
+
     private registerAngularNodes() {
         REGISTERED_NODES.forEach(node => {
             register({
@@ -157,7 +163,6 @@ export class FlowEditorComponent implements AfterViewInit {
         FlowService.graph = this.graph;
 
         setupGraphEvents(this.graph, this.ngZone, this);
-        this.setupExternalControls();
 
         // Atualiza o gráfico quando o tema muda
         this.themeService.theme$.subscribe((newTheme) => {
@@ -586,16 +591,49 @@ export class FlowEditorComponent implements AfterViewInit {
     }
 
     // ==========================================
+    // ==========================================
     // INTEGRAÇÃO DE API EXTERNA
     // ==========================================
     private setupExternalControls() {
         if (this.control) {
-            this.control.getExportData = () => ({ logic: this.graph.toJSON() });
-            this.control.importData = (data: any) => {
-                if (!data) return;
-                this.graph.fromJSON(data);
-            };
-            this.control.clearCanvas = () => this.graph.clearCells();
+            this.control.getExportData = this.getExportData.bind(this);
+            this.control.importData = this.importData.bind(this);
+            this.control.clearCanvas = this.clearCanvas.bind(this);
         }
+    }
+
+    public getExportData() {
+        const fullGraph = this.graph.toJSON();
+
+        const logicData = {
+            nodes: fullGraph.cells
+                .filter((c: any) => c.shape !== 'edge')
+                .map((n: any) => ({
+                    id: n.id,
+                    type: n.data?.type,
+                    label: n.data?.label,
+                    config: n.data?.config || {}
+                })),
+            edges: fullGraph.cells
+                .filter((c: any) => c.shape === 'edge')
+                .map((e: any) => ({
+                    id: e.id,
+                    source: e.source.cell,
+                    target: e.target.cell,
+                    sourcePort: e.source.port,
+                    targetPort: e.target.port
+                }))
+        };
+
+        return { logic: logicData, graph: fullGraph };
+    }
+
+    public importData(data: any) {
+        if (!data) return;
+        this.graph.fromJSON(data);
+    }
+
+    public clearCanvas() {
+        this.graph.clearCells();
     }
 }
