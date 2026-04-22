@@ -630,7 +630,15 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
 
     public importData(data: any) {
         if (!data) return;
-        this.graph.fromJSON(data);
+
+        // Se for string JSON, faz parsing
+        let graphData = typeof data === 'string' ? JSON.parse(data) : data;
+
+        // Limpa o gráfico antes de importar
+        this.graph.clearCells();
+
+        // Importa os dados
+        this.graph.fromJSON(graphData);
     }
 
     public clearCanvas() {
