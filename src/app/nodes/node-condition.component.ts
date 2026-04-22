@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef } from '@angular/core';
+import { Component, OnInit, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Node } from '@antv/x6';
 import { FlowService } from '../flow/flow.service';
@@ -25,19 +25,18 @@ import { NodeWrapperComponent } from './node-wrapper.component';
           </div>
 
           <div class="node-body">
-            
-            <div class="condition-box">
-              <span>Atende as condições</span>
-              <div class="status-icon success">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <!-- Exibir grupos de condições salvos -->
+            <div *ngIf="conditionGroups.length > 0" class="conditions-display">
+              <div *ngFor="let group of conditionGroups; let i = index" class="condition-group-display">
+                <span class="group-label">{{ i === 0 ? 'Quando:' : 'Senão:' }}</span>
+                <span class="group-name" *ngIf="group.name">{{ group.name }}</span>
+                <span class="group-name empty" *ngIf="!group.name">(sem nome)</span>
               </div>
             </div>
 
-            <div class="condition-box">
-              <span>Não atende nenhuma das condições</span>
-              <div class="status-icon error">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </div>
+            <!-- Fallback se não houver condições -->
+            <div *ngIf="conditionGroups.length === 0" class="condition-box">
+              <span>Clique em "Configurar" para definir as condições</span>
             </div>
 
             <button class="config-btn" (mousedown)="$event.stopPropagation()" (click)="configureCondition()">
@@ -75,8 +74,47 @@ import { NodeWrapperComponent } from './node-wrapper.component';
     .title { font-size: 13px; font-weight: 600; color: #8a919e; transition: color 0.3s; }
     .custom-node:not(.dark-node) .title { color: #999; }
     
-    .node-body { padding: 0 20px 10px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .node-body { padding: 0 20px 10px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
     
+    .conditions-display { display: flex; flex-direction: column; gap: 8px; }
+    
+    .condition-group-display {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 12px;
+      background-color: #1a1c1f;
+      border: 1px solid #33383d;
+      border-radius: 12px;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    .custom-node:not(.dark-node) .condition-group-display { background-color: #f5f5f5; border-color: #ddd; }
+
+    .group-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #8a919e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: color 0.3s;
+    }
+    .custom-node:not(.dark-node) .group-label { color: #999; }
+
+    .group-name {
+      font-size: 12px;
+      color: #e0e0e0;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .custom-node:not(.dark-node) .group-name { color: #333; }
+
+    .group-name.empty {
+      color: #8a919e;
+      font-style: italic;
+      transition: color 0.3s;
+    }
+    .custom-node:not(.dark-node) .group-name.empty { color: #999; }
+
     .condition-box {
       background-color: #1a1c1f;
       border: 1px solid #33383d;
@@ -119,8 +157,9 @@ import { NodeWrapperComponent } from './node-wrapper.component';
 })
 export class NodeConditionComponent implements OnInit {
     isConfigured: boolean = false;
+    conditionGroups: any[] = [];
 
-    constructor(private eRef: ElementRef, public themeService: ThemeService) { }
+    constructor(private eRef: ElementRef, private cdr: ChangeDetectorRef, public themeService: ThemeService) { }
 
     private getNode(): Node | null {
         if (!FlowService.graph) return null;
@@ -132,9 +171,78 @@ export class NodeConditionComponent implements OnInit {
         setTimeout(() => {
             const node = this.getNode();
             if (node) {
-                const data = node.getData();
-                this.isConfigured = data?.config?.isConfigured || false;
+                this.loadConditionData(node);
+
+                // Escuta mudanças nos dados do nó
+                node.on('change:data', ({ current }) => {
+                    this.loadConditionData(node);
+                });
             }
+        });
+    }
+
+    private loadConditionData(node: Node) {
+        const data = node.getData();
+        this.isConfigured = data?.config?.isConfigured || false;
+        this.conditionGroups = data?.config?.conditionGroups || [];
+
+        // Sincroniza as portas com os grupos
+        this.syncPortsWithGroups(node);
+
+        // Ajusta a altura do nó dinamicamente
+        this.resizeNodeHeight(node);
+
+        this.cdr.detectChanges();
+    }
+
+    private resizeNodeHeight(node: Node) {
+        if (!node) return;
+
+        // Altura base do nó (sem condições)
+        const baseHeight = 420;
+
+        // Calcula altura adicional: cada grupo adiciona ~52px (44px grupo + 8px gap)
+        // Mas apenas quando há mais de 4 grupos (aproximadamente o que cabe na altura base)
+        const additionalHeight = Math.max(0, (this.conditionGroups.length - 4) * 52);
+        const newHeight = baseHeight + additionalHeight;
+
+        // Atualiza o tamanho do nó
+        node.resize(320, newHeight);
+    }
+
+    private syncPortsWithGroups(node: Node) {
+        if (!node) return;
+
+        // Remove todas as portas de saída existentes (exceto 'in')
+        const existingOutPorts = node.getPortsByGroup('out-absolute')
+            .map(p => p.id)
+            .filter((id): id is string => Boolean(id));
+
+        existingOutPorts.forEach(portId => {
+            node.removePort(portId);
+        });
+
+        // Adiciona nova porta para cada grupo, alinhada com o centro visual do grupo
+        this.conditionGroups.forEach((group, index) => {
+            const portId = group.id || `group-${index}`;
+            let yPosition: number;
+
+            if (index === 0) {
+                // Primeira porta alinhada com o primeiro grupo
+                yPosition = 75;
+            } else {
+                // A partir da segunda, aumentar espaçamento: incremento de 65px entre portas
+                yPosition = 75 + (index * 60);
+            }
+
+            node.addPort({
+                id: portId,
+                group: 'out-absolute',
+                args: {
+                    x: 320, // x = largura do nó
+                    y: yPosition
+                }
+            });
         });
     }
 

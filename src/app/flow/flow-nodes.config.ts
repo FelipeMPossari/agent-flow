@@ -12,14 +12,14 @@ export const REGISTERED_NODES = [
     },
     {
         shape: 'ng-condition',
-        width: 250,
-        height: 250,
+        width: 320,
+        height: 420,
         content: NodeConditionComponent,
     },
     {
         shape: 'ng-message',
         width: 280,
-        height: 200,
+        height: 320,
         content: NodeMessageComponent,
     },
 ];
@@ -45,39 +45,30 @@ export const getNodeConfig = (toolId: string, nodeId: string, toolLabel: string)
             return {
                 ...baseConfig,
                 shape: 'ng-condition',
-                width: 280,
-                height: 320,
+                width: 320,
+                height: 420,
                 ports: {
                     groups: {
                         ...PORT_GROUPS,
-                        // O grupo absoluto agora clona o visual exato da porta de entrada
+                        // Grupo para portas dinâmicas de saída (posicionamento absoluto)
                         'out-absolute': {
                             position: 'absolute',
-                            attrs: PORT_GROUPS.in.attrs
+                            attrs: PORT_GROUPS.out.attrs
                         }
                     },
                     items: [
-                        { group: 'in', id: 'in' },
-                        {
-                            group: 'out-absolute',
-                            id: 'out-true',
-                            args: { x: 280, y: 65 }
-                        },
-                        {
-                            group: 'out-absolute',
-                            id: 'out-false',
-                            args: { x: 280, y: 125 }
-                        }
+                        { group: 'in', id: 'in' }
+                        // Portas dinâmicas serão criadas pelo componente baseado nos grupos de condições
                     ]
                 }
             };
 
-        case 'send_message': // Certifique-se que o ID bate com o availableTools
+        case 'send_message':
             return {
                 ...baseConfig,
                 shape: 'ng-message',
                 width: 280,
-                height: 280,
+                height: 320,
                 ports: {
                     ...baseConfig.ports,
                     items: [

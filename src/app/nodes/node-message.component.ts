@@ -5,6 +5,7 @@ import { NodeWrapperComponent } from './node-wrapper.component';
 import { Node } from '@antv/x6';
 import { FlowService } from '../flow/flow.service';
 import { ThemeService } from '../flow/theme.service';
+import { SendMessageConfig } from '../flow/flow.models';
 
 @Component({
     selector: 'app-node-message',
@@ -50,6 +51,46 @@ import { ThemeService } from '../flow/theme.service';
              </textarea>
           </div>
 
+          <!-- NOVA SEÇÃO: Toggle para Aguardar Resposta -->
+          <div class="response-section" (mousedown)="$event.stopPropagation()">
+            <div class="toggle-wrapper">
+              <label class="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  [(ngModel)]="waitForResponse" 
+                  (ngModelChange)="onWaitForResponseChange()"
+                  class="checkbox-input">
+                <span class="checkbox-text">Aguardar resposta do usuário</span>
+              </label>
+            </div>
+
+            <!-- Dropdown de variáveis (visível apenas se waitForResponse for true) -->
+            <div class="variable-selector" *ngIf="waitForResponse">
+              <label class="select-label">Salvar resposta na variável</label>
+              <select 
+                [(ngModel)]="selectedVariable"
+                (ngModelChange)="onVariableChange()"
+                class="variable-dropdown">
+                <option value="">-- Selecione uma variável --</option>
+                <option *ngFor="let sysVar of systemVariables" [value]="sysVar">
+                  {{ sysVar }}
+                </option>
+                <option value="__create_new">-- Criar nova variável... --</option>
+              </select>
+
+              <!-- Input de texto para nova variável (visível se "Criar nova variável" for selecionada) -->
+              <div class="new-variable-input" *ngIf="selectedVariable === '__create_new'">
+                <input 
+                  type="text" 
+                  [(ngModel)]="newVariableName"
+                  (ngModelChange)="onNewVariableChange()"
+                  placeholder="Digite o nome da nova variável"
+                  class="text-input">
+                <small class="hint">Ex: cor_favorita, idade, localidade</small>
+              </div>
+            </div>
+          </div>
+
           <div class="node-footer warning" *ngIf="!messageText && !attachmentData">
             É obrigatório uma mensagem ou mídia
           </div>
@@ -71,7 +112,7 @@ import { ThemeService } from '../flow/theme.service';
     .title { font-size: 13px; font-weight: 600; color: #8a919e; transition: color 0.3s; }
     .custom-node:not(.dark-node) .title { color: #999; }
     
-    .node-body { padding: 0 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .node-body { padding: 0 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
     .sub-header { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
     .sub-header .label { font-size: 13px; color: #8a919e; transition: color 0.3s; }
     .custom-node:not(.dark-node) .sub-header .label { color: #999; }
@@ -102,6 +143,65 @@ import { ThemeService } from '../flow/theme.service';
     .custom-node:not(.dark-node) textarea { color: #333; }
     textarea::placeholder { color: #666; transition: color 0.3s; }
     .custom-node:not(.dark-node) textarea::placeholder { color: #999; }
+
+    /* SEÇÃO DE RESPOSTA */
+    .response-section { padding: 12px 8px; border-top: 1px solid #33383d; transition: border-color 0.3s; }
+    .custom-node:not(.dark-node) .response-section { border-top-color: #ddd; }
+
+    .toggle-wrapper { display: flex; align-items: center; margin-bottom: 8px; }
+
+    .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #e0e0e0; user-select: none; transition: color 0.3s; }
+    .custom-node:not(.dark-node) .checkbox-label { color: #333; }
+
+    .checkbox-input { cursor: pointer; width: 16px; height: 16px; accent-color: #1890ff; }
+
+    .checkbox-text { transition: color 0.3s; }
+
+    .variable-selector { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+
+    .select-label { font-size: 12px; color: #8a919e; font-weight: 500; transition: color 0.3s; }
+    .custom-node:not(.dark-node) .select-label { color: #999; }
+
+    .variable-dropdown { 
+      width: 100%; 
+      padding: 8px 12px; 
+      background-color: #1a1c1f; 
+      border: 1px solid #33383d; 
+      border-radius: 8px; 
+      color: #e0e0e0; 
+      font-size: 12px; 
+      cursor: pointer; 
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    .variable-dropdown:hover { border-color: #5F95FF; }
+    .variable-dropdown:focus { outline: none; border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2); }
+    .custom-node:not(.dark-node) .variable-dropdown { background-color: #f5f5f5; border-color: #ddd; color: #333; }
+    .custom-node:not(.dark-node) .variable-dropdown:hover { border-color: #1890ff; }
+    .custom-node:not(.dark-node) .variable-dropdown:focus { box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15); }
+
+    .new-variable-input { display: flex; flex-direction: column; gap: 6px; animation: slideDown 0.2s ease-out; }
+
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .text-input { 
+      padding: 8px 12px; 
+      background-color: #1a1c1f; 
+      border: 1px solid #33383d; 
+      border-radius: 8px; 
+      color: #e0e0e0; 
+      font-size: 12px; 
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    .text-input:hover { border-color: #5F95FF; }
+    .text-input:focus { outline: none; border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2); }
+    .custom-node:not(.dark-node) .text-input { background-color: #f5f5f5; border-color: #ddd; color: #333; }
+    .custom-node:not(.dark-node) .text-input:hover { border-color: #1890ff; }
+    .custom-node:not(.dark-node) .text-input:focus { box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15); }
+
+    .hint { font-size: 11px; color: #666; transition: color 0.3s; margin-top: -2px; }
+    .custom-node:not(.dark-node) .hint { color: #999; }
     
     .node-footer.warning { background-color: #4a3618; color: #faad14; padding: 10px 15px; font-size: 11px; font-weight: 500; border-radius: 12px; margin-top: 4px; line-height: 1.4; border: 1px solid rgba(250, 173, 20, 0.2); transition: background-color 0.3s, color 0.3s; }
     .custom-node:not(.dark-node) .node-footer.warning { background-color: #fff7e6; color: #d46b08; border-color: #ffd591; }
@@ -110,6 +210,11 @@ import { ThemeService } from '../flow/theme.service';
 export class NodeMessageComponent implements OnInit {
     messageText: string = '';
     attachmentData: any = null;
+    waitForResponse: boolean = false;
+    selectedVariable: string = '';
+    newVariableName: string = '';
+
+    readonly systemVariables: string[] = ['sys_nome', 'sys_cpf', 'sys_telefone', 'sys_email'];
 
     constructor(private eRef: ElementRef, private cdr: ChangeDetectorRef, public themeService: ThemeService) { }
 
@@ -125,22 +230,49 @@ export class NodeMessageComponent implements OnInit {
             if (node) {
                 // Carrega o estado inicial (útil quando você recarrega um fluxo salvo)
                 const data = node.getData();
-                this.messageText = data?.config?.messageText || '';
-                this.attachmentData = data?.config?.attachment || null;
+                const config: SendMessageConfig = data?.config || {};
+
+                this.messageText = config.messageText || '';
+                this.attachmentData = config.attachment || null;
+                this.waitForResponse = config.waitForResponse || false;
+
+                // Se houver uma variável salva, detectar se é customizada ou sistema
+                if (config.variableName) {
+                    if (this.systemVariables.includes(config.variableName)) {
+                        this.selectedVariable = config.variableName;
+                    } else {
+                        this.selectedVariable = '__create_new';
+                        this.newVariableName = config.variableName;
+                    }
+                }
 
                 // Escuta mudanças em tempo real
                 node.on('change:data', ({ current }) => {
-                    // Atualiza o texto
-                    const externalText = current?.config?.messageText || '';
+                    const externalConfig: SendMessageConfig = current?.config || {};
+
+                    const externalText = externalConfig.messageText || '';
                     if (this.messageText !== externalText) {
                         this.messageText = externalText;
                     }
 
-                    // ATUALIZA O ANEXO
-                    const externalAttachment = current?.config?.attachment || null;
+                    const externalAttachment = externalConfig.attachment || null;
                     this.attachmentData = externalAttachment;
 
-                    this.cdr.detectChanges(); // Força a tela a atualizar
+                    const externalWaitForResponse = externalConfig.waitForResponse || false;
+                    if (this.waitForResponse !== externalWaitForResponse) {
+                        this.waitForResponse = externalWaitForResponse;
+                    }
+
+                    if (externalConfig.variableName) {
+                        if (this.systemVariables.includes(externalConfig.variableName)) {
+                            this.selectedVariable = externalConfig.variableName;
+                        } else {
+                            this.selectedVariable = '__create_new';
+                            this.newVariableName = externalConfig.variableName;
+                        }
+                    }
+
+                    this.cdr.detectChanges();
                 });
             }
         });
@@ -150,15 +282,54 @@ export class NodeMessageComponent implements OnInit {
         const node = this.getNode();
         if (node) {
             const currentData = node.getData();
-            node.setData({ ...currentData, config: { ...currentData.config, messageText: this.messageText } });
+            const config: SendMessageConfig = {
+                messageText: this.messageText,
+                attachment: this.attachmentData || undefined,
+                waitForResponse: this.waitForResponse,
+                variableName: this.getVariableName() || undefined
+            };
+            node.setData({ ...currentData, config });
         }
+    }
+
+    onWaitForResponseChange() {
+        // Reset das variáveis quando desmarca
+        if (!this.waitForResponse) {
+            this.selectedVariable = '';
+            this.newVariableName = '';
+        }
+        this.saveData();
+    }
+
+    onVariableChange() {
+        // Reset do campo de nova variável se selecionou algo predefinido
+        if (this.selectedVariable !== '__create_new') {
+            this.newVariableName = '';
+        }
+        this.saveData();
+    }
+
+    onNewVariableChange() {
+        this.saveData();
+    }
+
+    private getVariableName(): string | undefined {
+        if (!this.waitForResponse) return undefined;
+
+        if (this.selectedVariable === '__create_new') {
+            return this.newVariableName.trim() || undefined;
+        }
+
+        return this.selectedVariable || undefined;
     }
 
     removeAttachment() {
         const node = this.getNode();
         if (node) {
             const currentData = node.getData();
-            node.setData({ ...currentData, config: { ...currentData.config, attachment: null } });
+            const config: SendMessageConfig = { ...currentData.config };
+            config.attachment = undefined;
+            node.setData({ ...currentData, config });
         }
     }
 
@@ -167,7 +338,6 @@ export class NodeMessageComponent implements OnInit {
         const node = this.getNode();
         const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
         if (node && FlowService.graph) {
-            // Disparamos o evento avisando onde o botão foi clicado na tela
             FlowService.graph.trigger('modal:variables:open', { node, x: rect.right + 15, y: rect.top - 10 });
         }
     }

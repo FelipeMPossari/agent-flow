@@ -43,9 +43,7 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
     // --- ESTADOS DA MODAL DE CONDIÇÃO ---
     activeConditionNode: Node | null = null;
     showConditionModal = false;
-    conditionGroupName = '';
-    conditionGroupType = '';
-    conditionGroups: Array<{ id: string; name: string; conditions: any[] }> = [];
+    conditionGroups: Array<{ id: string; name?: string; conditions: any[] }> = [];
     activeTabCondition = 'Configurações';
     openDropdowns: { [key: string]: boolean } = {};
 
@@ -403,15 +401,27 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
         this.activeConditionNode = node;
         const data = node.getData();
 
-        // Carrega dados existentes se houver
-        if (data?.config?.conditionGroups) {
+        // Sempre faz uma cópia profunda para não compartilhar referências
+        if (data?.config?.conditionGroups && data.config.conditionGroups.length > 0) {
             this.conditionGroups = JSON.parse(JSON.stringify(data.config.conditionGroups));
         } else {
-            this.conditionGroups = [];
+            // Sempre inicia com 1 grupo padrão
+            this.conditionGroups = [{
+                id: `group-${Date.now()}`,
+                name: '',
+                conditions: [{
+                    id: `condition-${Date.now()}`,
+                    variable: '',
+                    operatorType: '',
+                    targetValue: '',
+                    logicType: 'AND' as const
+                }]
+            }];
         }
 
         this.showConditionModal = true;
         this.activeTabCondition = 'Configurações';
+        this.openDropdowns = {}; // Reseta dropdowns
         this.resetConditionForm();
     }
 
@@ -422,26 +432,19 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
     }
 
     resetConditionForm() {
-        this.conditionGroupName = '';
+        // Form reset if needed
     }
 
     addConditionGroup() {
-        if (!this.conditionGroupName.trim()) {
-            this.showNotification('warning', 'Campo obrigatório', 'Por favor, insira um nome para o grupo de condições');
-            return;
-        }
-
         const newGroup = {
             id: `group-${Date.now()}`,
-            name: this.conditionGroupName,
-            conditions: [
-                {
-                    id: `condition-${Date.now()}`,
-                    property: '',
-                    operator: '',
-                    value: ''
-                }
-            ]
+            name: '',
+            conditions: [{
+                id: `condition-${Date.now()}`,
+                variable: '',
+                operatorType: '',
+                targetValue: ''
+            }]
         };
 
         this.conditionGroups.push(newGroup);
@@ -477,9 +480,10 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
         if (group) {
             group.conditions.push({
                 id: `condition-${Date.now()}`,
-                property: '',
-                operator: '',
-                value: ''
+                variable: '',
+                operatorType: '',
+                targetValue: '',
+                logicType: 'AND' as const
             });
         }
     }
@@ -505,14 +509,19 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
             const data = this.activeConditionNode.getData();
             const isConfigured = this.conditionGroups.some(g => g.conditions.length > 0);
 
-            this.activeConditionNode.setData({
+            const newData = {
                 ...data,
                 config: {
                     ...data.config,
-                    conditionGroups: this.conditionGroups,
+                    conditionGroups: JSON.parse(JSON.stringify(this.conditionGroups)),
                     isConfigured: isConfigured
                 }
-            });
+            };
+
+            this.activeConditionNode.setData(newData);
+
+            // Força o disparo do evento de mudança para o componente detectar
+            this.activeConditionNode.trigger('change:data', { current: newData });
         }
 
         this.closeConditionModal();

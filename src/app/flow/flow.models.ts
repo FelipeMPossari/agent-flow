@@ -32,3 +32,30 @@ export interface ModalState {
     confirmLabel: string;
     pendingAction: (() => void) | null;
 }
+
+// --- CONTRATO: NÓ ENVIAR MENSAGEM (send_message) ---
+export interface SendMessageConfig {
+    messageText: string;
+    attachment?: { name: string; size: number; type: string; };
+    waitForResponse: boolean;
+    variableName?: string;
+}
+
+// --- CONTRATO: NÓ CONDIÇÃO (cond_custom) COM PORTAS DINÂMICAS ---
+export interface ConditionDetail {
+    variable: string;
+    operatorType: string;
+    targetValue: string;
+    logicType?: 'AND' | 'OR';
+}
+
+export interface ConditionGroup {
+    id: string;
+    name?: string;
+    conditions: ConditionDetail[];
+}
+
+export interface CondCustomConfig {
+    isConfigured: boolean;
+    conditionGroups: ConditionGroup[];
+}

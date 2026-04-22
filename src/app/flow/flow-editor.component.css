@@ -1041,6 +1041,68 @@
     margin-left: 8px;
 }
 
+.group-name-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    flex: 1;
+}
+
+.group-name-input:focus {
+    outline: none;
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.app-container.dark-theme .group-name-input {
+    background-color: #2a2e33;
+    border-color: #33383d;
+    color: #e0e0e0;
+}
+
+.app-container.dark-theme .group-name-input:focus {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.logic-separator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.logic-select {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    min-width: 60px;
+    transition: border-color 0.2s ease;
+}
+
+.logic-select:focus {
+    outline: none;
+    border-color: #1890ff;
+}
+
+.app-container.dark-theme .logic-select {
+    background-color: #2a2e33;
+    border-color: #33383d;
+    color: #e0e0e0;
+}
+
+.app-container.dark-theme .logic-select:focus {
+    border-color: #1890ff;
+}
+
 .input-condition {
     padding: 10px;
     border: 1px solid #ddd;

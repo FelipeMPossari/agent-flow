@@ -127,29 +127,28 @@
 
             <div class="sidebar-body" *ngIf="activeTabCondition === 'Configurações'">
 
-                <div class="condition-group-form">
-                    <div class="form-group">
-                        <label>Nome do grupo de condições</label>
-                        <input type="text" [(ngModel)]="conditionGroupName" placeholder="Ex: Validar dados">
-                    </div>
-
-                    <button class="btn-add-condition" (click)="addConditionGroup()">
-                        +Adicionar condição
-                    </button>
-                </div>
-
                 <div class="condition-groups-list">
                     <div class="condition-group-item" *ngFor="let group of conditionGroups; let i = index">
                         <div class="group-header">
                             <span class="group-label" *ngIf="i === 0">Quando:</span>
-                            <span class="group-label" *ngIf="i > 0">E se:</span>
-                            <span class="group-name">{{ group.name }}</span>
+                            <span class="group-label" *ngIf="i > 0">Senão:</span>
+                            <input type="text" [(ngModel)]="group.name" placeholder="Nome (opcional)"
+                                class="group-name-input" />
                             <button class="btn-remove-group" (click)="removeConditionGroup(group.id)"
-                                title="Remover grupo">🗑️</button>
+                                title="Remover grupo" *ngIf="conditionGroups.length > 1">🗑️</button>
                         </div>
 
                         <div class="group-conditions">
-                            <div class="condition-item" *ngFor="let condition of group.conditions">
+                            <div class="condition-item"
+                                *ngFor="let condition of group.conditions; let condIndex = index">
+                                <!-- Mostrar E/OU antes de cada condição (exceto a primeira) -->
+                                <div class="logic-separator" *ngIf="condIndex > 0">
+                                    <select [(ngModel)]="condition.logicType" class="logic-select">
+                                        <option value="AND">E</option>
+                                        <option value="OR">OU</option>
+                                    </select>
+                                </div>
+
                                 <!-- Custom Select for Property -->
                                 <div class="custom-select-container" (mousedown)="$event.stopPropagation()">
                                     <div class="select-trigger" (click)="toggleDropdown(condition.id, 'property')"
