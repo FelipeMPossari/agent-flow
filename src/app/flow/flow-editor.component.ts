@@ -48,6 +48,15 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges, OnDestroy 
     activeTabCondition = 'Configurações';
     openDropdowns: { [key: string]: boolean } = {};
 
+    // --- ESTADOS DA MODAL DE REQUISIÇÃO WEB ---
+    activeWebRequestNode: Node | null = null;
+    showWebRequestModal = false;
+    webRequestEndpoint: string = '';
+    webRequestMethod: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' = 'GET';
+    webRequestUrlParameters: Array<{ key: string; value: string }> = [];
+    webRequestJsonBody: string = '';
+    webRequestHeaders: Array<{ key: string; value: string }> = [];
+
     // --- ESTADOS DA MODAL DE NOTIFICAÇÃO ---
     showNotificationModal = false;
     isClosingNotification = false;
@@ -182,13 +191,13 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     private updateDynamicVariables() {
         this.dynamicVariables = this.flowVariablesService.scanVariables(this.graph);
-        
+
         const dynamicProps = this.dynamicVariables.map(v => ({
             label: v,
             value: v,
             type: 'text' // Tratamos variáveis dinâmicas como texto para uso de operadores
         }));
-        
+
         this.availableProperties = [...this.baseProperties, ...dynamicProps];
         this.cdr.detectChanges();
     }
@@ -600,6 +609,139 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges, OnDestroy 
         const options = this.getPropertyOptions(propertyValue);
         const opt = options.find(o => o.value === valueValue);
         return opt?.label || valueValue || 'Selecione';
+    }
+
+    // ==========================================
+    // CONTROLE DE MODAL DE REQUISIÇÃO WEB
+    // ==========================================
+    openWebRequestModal(node: Node) {
+        this.activeWebRequestNode = node;
+        const data = node.getData();
+
+        if (data?.config && data.config.endpoint) {
+            this.webRequestEndpoint = data.config.endpoint;
+            this.webRequestMethod = data.config.method || 'GET';
+            // Parse URL parameters if stored as string
+            if (typeof data.config.urlParameters === 'string' && data.config.urlParameters) {
+                this.webRequestUrlParameters = this.parseUrlParameters(data.config.urlParameters);
+            } else if (Array.isArray(data.config.urlParameters)) {
+                this.webRequestUrlParameters = JSON.parse(JSON.stringify(data.config.urlParameters));
+            } else {
+                this.webRequestUrlParameters = [];
+            }
+            this.webRequestJsonBody = data.config.jsonBody || '';
+            // Parse headers
+            if (typeof data.config.headers === 'string' && data.config.headers) {
+                this.webRequestHeaders = this.parseHeaders(data.config.headers);
+            } else if (Array.isArray(data.config.headers)) {
+                this.webRequestHeaders = JSON.parse(JSON.stringify(data.config.headers));
+            } else {
+                this.webRequestHeaders = [];
+            }
+        } else {
+            this.webRequestEndpoint = '';
+            this.webRequestMethod = 'GET';
+            this.webRequestUrlParameters = [];
+            this.webRequestJsonBody = '';
+            this.webRequestHeaders = [];
+        }
+
+        this.showWebRequestModal = true;
+    }
+
+    closeWebRequestModal() {
+        this.showWebRequestModal = false;
+        this.activeWebRequestNode = null;
+        this.resetWebRequestForm();
+    }
+
+    resetWebRequestForm() {
+        this.webRequestEndpoint = '';
+        this.webRequestMethod = 'GET';
+        this.webRequestUrlParameters = [];
+        this.webRequestJsonBody = '';
+        this.webRequestHeaders = [];
+    }
+
+    addUrlParameter() {
+        this.webRequestUrlParameters.push({ key: '', value: '' });
+    }
+
+    removeUrlParameter(index: number) {
+        this.webRequestUrlParameters.splice(index, 1);
+    }
+
+    addHeader() {
+        this.webRequestHeaders.push({ key: '', value: '' });
+    }
+
+    removeHeader(index: number) {
+        this.webRequestHeaders.splice(index, 1);
+    }
+
+    private parseUrlParameters(queryString: string): Array<{ key: string; value: string }> {
+        if (!queryString) return [{ key: '', value: '' }];
+
+        const params = queryString.split('&').map(pair => {
+            const [key, value] = pair.split('=');
+            return { key: decodeURIComponent(key || ''), value: decodeURIComponent(value || '') };
+        });
+
+        return params.length > 0 ? params : [{ key: '', value: '' }];
+    }
+
+    private parseHeaders(headersJson: string): Array<{ key: string; value: string }> {
+        if (!headersJson) return [{ key: '', value: '' }];
+
+        try {
+            const headersObj = JSON.parse(headersJson);
+            const headers = Object.entries(headersObj).map(([key, value]) => ({
+                key,
+                value: String(value)
+            }));
+            return headers.length > 0 ? headers : [{ key: '', value: '' }];
+        } catch {
+            return [{ key: '', value: '' }];
+        }
+    }
+
+    private serializeHeaders(): string {
+        const headersObj: { [key: string]: string } = {};
+        this.webRequestHeaders
+            .filter(header => header.key.trim())
+            .forEach(header => {
+                headersObj[header.key] = header.value;
+            });
+
+        return Object.keys(headersObj).length > 0 ? JSON.stringify(headersObj) : '';
+    }
+
+    confirmWebRequest() {
+        if (!this.webRequestEndpoint.trim()) {
+            this.showNotification('error', 'Endpoint obrigatório', 'É necessário informar um endpoint');
+            return;
+        }
+
+        if (this.activeWebRequestNode) {
+            const data = this.activeWebRequestNode.getData();
+
+            const newData = {
+                ...data,
+                config: {
+                    endpoint: this.webRequestEndpoint,
+                    method: this.webRequestMethod,
+                    urlParameters: this.webRequestMethod === 'GET' ? this.webRequestUrlParameters : [],
+                    jsonBody: this.webRequestJsonBody,
+                    headers: this.serializeHeaders(),
+                    isConfigured: true
+                }
+            };
+
+            this.activeWebRequestNode.setData(newData, { overwrite: true });
+            this.activeWebRequestNode.trigger('change:data', { current: newData });
+        }
+
+        this.closeWebRequestModal();
     }
 
     // ==========================================

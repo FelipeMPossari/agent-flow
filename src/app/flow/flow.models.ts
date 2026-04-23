@@ -59,3 +59,13 @@ export interface CondCustomConfig {
     isConfigured: boolean;
     conditionGroups: ConditionGroup[];
 }
+
+// --- CONTRATO: NÓ REQUISIÇÃO WEB (web_request) ---
+export interface WebRequestConfig {
+    endpoint: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+    urlParameters?: Array<{ key: string; value: string }>;
+    jsonBody?: string;
+    headers?: string;
+    isConfigured: boolean;
+}

@@ -49,4 +49,7 @@ export function setupGraphEvents(graph: Graph, ngZone: NgZone, component: any) {
     graph.on('modal:condition:open', ({ node }: { node: Node }) => {
         ngZone.run(() => component.openConditionModal(node));
     })
+    graph.on('modal:web-request:open', ({ node }: { node: Node }) => {
+        ngZone.run(() => component.openWebRequestModal(node));
+    });
 }

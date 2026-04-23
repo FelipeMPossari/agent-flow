@@ -35,4 +35,11 @@ export const AVAILABLE_TOOLS: Models.AgentTool[] = [
         description: 'Transfere o atendimento para outro setor.',
         icon: '🔁'
     },
+    {
+        id: 'web_request',
+        category: 'action',
+        label: 'Requisição Web',
+        description: 'Faz uma requisição HTTP para um endpoint.',
+        icon: '🌐'
+    },
 ];

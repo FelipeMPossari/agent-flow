@@ -275,6 +275,100 @@
         </div>
     </div>
 
+    <!-- MODAL DE REQUISIÇÃO WEB -->
+    <div class="fixed-overlay dark" *ngIf="showWebRequestModal" (mousedown)="closeWebRequestModal()">
+        <div class="attachment-sidebar" (mousedown)="$event.stopPropagation()">
+
+            <div class="modal-header">
+                <button class="close-btn left" (click)="closeWebRequestModal()">✕</button>
+                <h2>Configurar Requisição Web</h2>
+            </div>
+
+            <div class="sidebar-body">
+                <!-- ENDPOINT -->
+                <div class="form-group" (mousedown)="$event.stopPropagation()">
+                    <label class="form-label">Endpoint (URL)</label>
+                    <input type="text" [(ngModel)]="webRequestEndpoint" placeholder="https://api.exemplo.com/endpoint"
+                        class="form-input">
+                </div>
+
+                <!-- MÉTODO -->
+                <div class="form-group" (mousedown)="$event.stopPropagation()">
+                    <label class="form-label">Tipo de Requisição</label>
+                    <select [(ngModel)]="webRequestMethod" class="form-input">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                    </select>
+                </div>
+
+                <!-- PARÂMETROS DE URL (para GET) -->
+                <div class="form-group" *ngIf="webRequestMethod === 'GET'" (mousedown)="$event.stopPropagation()">
+                    <label class="form-label">Parâmetros da URL</label>
+                    <div class="parameters-list">
+                        <div class="parameter-row" *ngFor="let param of webRequestUrlParameters; let i = index">
+                            <input type="text" [(ngModel)]="param.key" placeholder="Chave"
+                                class="form-input param-input">
+                            <input type="text" [(ngModel)]="param.value" placeholder="Valor"
+                                class="form-input param-input">
+                            <button type="button" (click)="removeUrlParameter(i)" class="btn-remove-param"
+                                title="Remover parâmetro">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" (click)="addUrlParameter()" class="btn-add-param">
+                        + Parâmetro
+                    </button>
+                </div>
+
+                <!-- JSON BODY (para POST/PUT/PATCH) -->
+                <div class="form-group" *ngIf="['POST', 'PUT', 'PATCH'].includes(webRequestMethod)"
+                    (mousedown)="$event.stopPropagation()">
+                    <label class="form-label">Conteúdo JSON</label>
+                    <div class="textarea-with-vars">
+                        <textarea [(ngModel)]="webRequestJsonBody"
+                            placeholder="{ &#10;  &quot;chave&quot;: &quot;valor&quot;&#10;}" class="form-textarea">
+                        </textarea>
+                        <button class="var-insert-btn" [disabled]="!activeWebRequestNode" title="Inserir Variável">
+                            {{ '{}' }}
+                        </button>
+                    </div>
+                    <small class="form-hint">Use {{'{{'}}Variavel{{'}}'}} para referenciar variáveis do sistema ou
+                        customizadas</small>
+                </div>
+
+                <!-- HEADERS -->
+                <div class="form-group" (mousedown)="$event.stopPropagation()">
+                    <label class="form-label">Headers</label>
+                    <div class="parameters-list">
+                        <div class="parameter-row" *ngFor="let header of webRequestHeaders; let i = index">
+                            <input type="text" [(ngModel)]="header.key" placeholder="Chave"
+                                class="form-input param-input">
+                            <input type="text" [(ngModel)]="header.value" placeholder="Valor"
+                                class="form-input param-input">
+                            <button type="button" (click)="removeHeader(i)" class="btn-remove-param"
+                                title="Remover header">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" (click)="addHeader()" class="btn-add-param">
+                        + Header
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" (click)="closeWebRequestModal()">Cancelar</button>
+                <button class="btn-primary" (click)="confirmWebRequest()">Confirmar</button>
+            </div>
+
+        </div>
+    </div>
+
     <!-- MODAL DE NOTIFICAÇÃO -->
     <div class="notification-overlay" *ngIf="showNotificationModal" (click)="closeNotification()">
         <div class="notification-container" [class]="'notification-' + notificationType"

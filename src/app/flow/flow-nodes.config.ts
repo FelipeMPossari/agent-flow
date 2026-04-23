@@ -2,6 +2,7 @@ import { NodeConditionComponent } from '../nodes/node-condition.component';
 import { NodeMessageComponent } from '../nodes/node-message.component';
 import { NodeStartChannelComponent } from '../nodes/node-start-channel.component';
 import { NodeTransferComponent } from '../nodes/node-transfer.component';
+import { NodeWebRequestComponent } from '../nodes/node-web-request.component';
 import { PORT_GROUPS } from './flow-graph.config';
 
 export const REGISTERED_NODES = [
@@ -28,6 +29,12 @@ export const REGISTERED_NODES = [
         width: 250,
         height: 180,
         content: NodeTransferComponent,
+    },
+    {
+        shape: 'ng-web-request',
+        width: 280,
+        height: 320,
+        content: NodeWebRequestComponent,
     },
 ];
 
@@ -96,6 +103,28 @@ export const getNodeConfig = (toolId: string, nodeId: string, toolLabel: string)
                     items: [
                         { group: 'in', id: 'in' },
                         { group: 'out', id: 'out' }
+                    ]
+                }
+            };
+
+        case 'web_request':
+            return {
+                ...baseConfig,
+                shape: 'ng-web-request',
+                width: 280,
+                height: 320,
+                ports: {
+                    groups: {
+                        ...PORT_GROUPS,
+                        'out-absolute': {
+                            position: 'absolute',
+                            attrs: PORT_GROUPS.out.attrs
+                        }
+                    },
+                    items: [
+                        { group: 'in', id: 'in' },
+                        { group: 'out-absolute', id: 'success' },
+                        { group: 'out-absolute', id: 'failure' }
                     ]
                 }
             };
