@@ -518,7 +518,7 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
                 }
             };
 
-            this.activeConditionNode.setData(newData);
+            this.activeConditionNode.setData(newData, { overwrite: true });
 
             // Força o disparo do evento de mudança para o componente detectar
             this.activeConditionNode.trigger('change:data', { current: newData });
