@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, NgZone, ChangeDetectorRef, Input, Output, EventEmitter, Injector, HostListener, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, NgZone, ChangeDetectorRef, Input, Output, EventEmitter, Injector, HostListener, OnChanges, SimpleChanges, ViewEncapsulation, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Graph, Cell, Node } from '@antv/x6';
@@ -7,6 +7,7 @@ import { register } from '@antv/x6-angular-shape';
 import * as Models from './flow.models';
 import { getGraphOptions, validateConnectionRule, getPortGroups } from './flow-graph.config';
 import { FlowService } from './flow.service';
+import { FlowVariablesService } from './flow-variables.service';
 import { getNodeConfig, REGISTERED_NODES } from './flow-nodes.config';
 import { AVAILABLE_TOOLS, CATEGORY_CONFIG } from './flow-catalog.config';
 import { setupGraphEvents } from './flow-events.manager';
@@ -19,7 +20,7 @@ import { ThemeService } from './theme.service';
     templateUrl: './flow-editor.component.html',
     styleUrls: ['./flow-editor.component.css']
 })
-export class FlowEditorComponent implements AfterViewInit, OnChanges {
+export class FlowEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
     // --- ELEMENTOS E COMUNICAÇÃO ---
     @ViewChild('container', { static: true }) container!: ElementRef;
     @Input() control: any;
@@ -64,8 +65,11 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
         { label: '{{Contato.Id}}', value: '{{Contato.Id}}' }
     ];
 
-    // Propriedades disponíveis para condições
-    availableProperties = [
+    // Variáveis Dinâmicas
+    dynamicVariables: string[] = [];
+
+    // Propriedades disponíveis para condições (Base)
+    baseProperties = [
         {
             label: 'Campo do contato',
             value: 'contact_field',
@@ -88,6 +92,8 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
         { label: 'Data de criação', value: 'created_date', type: 'date' },
         { label: 'Última interação', value: 'last_interaction', type: 'date' }
     ];
+
+    availableProperties: any[] = [...this.baseProperties];
 
     // Operadores mapeados por tipo de propriedade
     operatorsByType: { [key: string]: { label: string; value: string }[] } = {
@@ -125,13 +131,22 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
         private ngZone: NgZone,
         private cdr: ChangeDetectorRef,
         private injector: Injector,
-        public themeService: ThemeService
+        public themeService: ThemeService,
+        private flowVariablesService: FlowVariablesService
     ) {
         this.registerAngularNodes();
     }
 
     ngAfterViewInit() {
         this.initGraph();
+    }
+
+    ngOnDestroy() {
+        if (this.graph) {
+            this.graph.off('node:change:data', this.onGraphDataChange);
+            this.graph.off('node:added', this.onGraphDataChange);
+            this.graph.off('node:removed', this.onGraphDataChange);
+        }
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -152,6 +167,32 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
         });
     }
 
+    private onGraphDataChange = () => {
+        this.ngZone.run(() => {
+            this.updateDynamicVariables();
+        });
+    };
+
+    private setupDynamicVariables() {
+        this.updateDynamicVariables();
+        this.graph.on('node:change:data', this.onGraphDataChange);
+        this.graph.on('node:added', this.onGraphDataChange);
+        this.graph.on('node:removed', this.onGraphDataChange);
+    }
+
+    private updateDynamicVariables() {
+        this.dynamicVariables = this.flowVariablesService.scanVariables(this.graph);
+        
+        const dynamicProps = this.dynamicVariables.map(v => ({
+            label: v,
+            value: v,
+            type: 'text' // Tratamos variáveis dinâmicas como texto para uso de operadores
+        }));
+        
+        this.availableProperties = [...this.baseProperties, ...dynamicProps];
+        this.cdr.detectChanges();
+    }
+
     private initGraph() {
         const theme = this.themeService.getTheme();
         const options = getGraphOptions(this.container.nativeElement, theme);
@@ -161,6 +202,7 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
         FlowService.graph = this.graph;
 
         setupGraphEvents(this.graph, this.ngZone, this);
+        this.setupDynamicVariables();
 
         // Atualiza o gráfico quando o tema muda
         this.themeService.theme$.subscribe((newTheme) => {
@@ -398,6 +440,9 @@ export class FlowEditorComponent implements AfterViewInit, OnChanges {
     // CONTROLE DE MODAL DE CONDIÇÃO
     // ==========================================
     openConditionModal(node: Node) {
+        // Garante que o dropdown sempre terá os dados mais atualizados varrendo o grafo no exato momento da abertura
+        this.updateDynamicVariables();
+
         this.activeConditionNode = node;
         const data = node.getData();
 

@@ -282,13 +282,13 @@ export class NodeMessageComponent implements OnInit {
         const node = this.getNode();
         if (node) {
             const currentData = node.getData();
-            const config: SendMessageConfig = {
+            const config: any = {
                 messageText: this.messageText,
                 attachment: this.attachmentData || undefined,
                 waitForResponse: this.waitForResponse,
                 variableName: this.getVariableName() || undefined
             };
-            node.setData({ ...currentData, config });
+            node.setData({ ...currentData, config }, { overwrite: true });
         }
     }
 
