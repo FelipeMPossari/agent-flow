@@ -28,4 +28,11 @@ export const AVAILABLE_TOOLS: Models.AgentTool[] = [
         description: 'Envia uma mensagem de texto.',
         icon: '💬'
     },
+    {
+        id: 'transfer_department',
+        category: 'action',
+        label: 'Transferir de setor',
+        description: 'Transfere o atendimento para outro setor.',
+        icon: '🔁'
+    },
 ];

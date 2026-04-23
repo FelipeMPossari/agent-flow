@@ -1,6 +1,7 @@
 import { NodeConditionComponent } from '../nodes/node-condition.component';
 import { NodeMessageComponent } from '../nodes/node-message.component';
 import { NodeStartChannelComponent } from '../nodes/node-start-channel.component';
+import { NodeTransferComponent } from '../nodes/node-transfer.component';
 import { PORT_GROUPS } from './flow-graph.config';
 
 export const REGISTERED_NODES = [
@@ -21,6 +22,12 @@ export const REGISTERED_NODES = [
         width: 280,
         height: 320,
         content: NodeMessageComponent,
+    },
+    {
+        shape: 'ng-transfer',
+        width: 250,
+        height: 180,
+        content: NodeTransferComponent,
     },
 ];
 
@@ -69,6 +76,21 @@ export const getNodeConfig = (toolId: string, nodeId: string, toolLabel: string)
                 shape: 'ng-message',
                 width: 280,
                 height: 320,
+                ports: {
+                    ...baseConfig.ports,
+                    items: [
+                        { group: 'in', id: 'in' },
+                        { group: 'out', id: 'out' }
+                    ]
+                }
+            };
+
+        case 'transfer_department':
+            return {
+                ...baseConfig,
+                shape: 'ng-transfer',
+                width: 250,
+                height: 180,
                 ports: {
                     ...baseConfig.ports,
                     items: [
